@@ -67,43 +67,6 @@ endpoints <- matrix(endpoint_list, ncol = 2, byrow = TRUE) %>%
   as.data.table %>%
   setnames(c("network_name","api_host"))
 
-# helper function
-getParams <- function(p) {
-
-  # i = 64
-  ti <- params[[i]] %>%
-    fromJSON(flatten=TRUE)
-
-  if (nrow(ti) == 3) {
-    amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
-    amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
-    amt_2 <- NA
-    amt_3 <- NA
-  } else if (nrow(ti) == 4) {
-    amt_0 <- as.numeric(ti$value[[4]][1]) / 1e12
-    amt_1 <- as.numeric(ti$value[[4]][2]) / 1e12
-    amt_2 <- as.numeric(ti$value[[4]][3]) / 1e12
-    amt_3 <- NA
-  } else if (nrow(ti) == 5) {
-    amt_0 <- as.numeric(ti$value[[5]][1]) / 1e12
-    amt_1 <- as.numeric(ti$value[[5]][2]) / 1e12
-    amt_2 <- as.numeric(ti$value[[5]][3]) / 1e12
-    amt_3 <- as.numeric(ti$value[[5]][4]) / 1e12
-  } else if (nrow(ti) > 5) {
-    stop("more than 4 pairs")
-  }
-
-  data.table(account = ti$value[[1]],
-             id_0 = ti$value[[2]]$Token[1],
-             id_1 = ti$value[[2]]$Token[2],
-             id_2 = ti$value[[2]]$Token[3],
-             id_3 = ti$value[[2]]$Token[4],
-             amt_0,
-             amt_1,
-             amt_2,
-             amt_3)
-
-}
 
 #' Get events from the Polkadot blockchain from the Subscan api
 #' https://docs.api.subscan.io
@@ -114,8 +77,8 @@ getParams <- function(p) {
 #' @concept Get events from the Polkadot blockchain from the Subscan api
 #' @param nobs integer how many transactions to pull
 #' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
-#' @param ss_module string indicating which module to pull; leave blank for all.
-#' @param ss_call string indicating which function call to pull; leave blank for all.
+#' @param module string indicating which module to pull; leave blank for all.
+#' @param call string indicating which function call to pull; leave blank for all.
 #'
 #' @return data.table
 #'
@@ -127,9 +90,12 @@ getParams <- function(p) {
 #' @export
 get_subscan_events <- function(nobs = 10, network = 'Karura', module = '', call = '') {
 
+  # nobs = 10; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1
+
   api_host <- endpoints[network_name == network, api_host]
   api_call <- '/api/scan/events'
   baseurl <- paste0('https://', api_host, api_call)
+  fname <- network %+% "_events.csv"
 
   # each `page` pulls in 100 rows, so calculate how many pages you need to pull
   last_page <- ceiling(max(1, (nobs /100)))
@@ -150,33 +116,73 @@ get_subscan_events <- function(nobs = 10, network = 'Karura', module = '', call 
       as.data.table
     params <- core_data$params
     core_data <- core_data[, params := NULL]
-    core_data[, time := as.POSIXct(block_timestamp, origin = "1970-01-01", tz = 'UTC')]
+    # core_data[, time := as.POSIXct(block_timestamp, origin = "1970-01-01", tz = 'UTC')]
 
     print(nrow(core_data) %+% " rows for page " %+% page %+% " had " %+% tmp$message %+% " at " %+% Sys.time())
 
     if (module == 'dex' & call == 'Swap') {
+
       d <- list()
       for (i in 1:length(params)) {
-        d[[i]] <- getParams(params[[i]])
+        ti <- fromJSON(params[[i]], flatten=TRUE)
+
+        if (length(ti$value[[3]]) == 2) {
+          amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
+          amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
+          amt_2 <- NA
+          amt_3 <- NA
+        } else if (length(ti$value[[3]]) == 3) {
+          amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
+          amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
+          amt_2 <- as.numeric(ti$value[[3]][3]) / 1e12
+          amt_3 <- NA
+        } else if (length(ti$value[[3]]) == 4) {
+          amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
+          amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
+          amt_2 <- as.numeric(ti$value[[3]][3]) / 1e12
+          amt_3 <- as.numeric(ti$value[[3]][4]) / 1e12
+        } else if (nrow(ti) > 4) {
+          stop("more than 4 pairs")
+        }
+
+        d[[i]] <- data.table(account = ti$value[[1]],
+                   id_0 = ti$value[[2]]$Token[1],
+                   id_1 = ti$value[[2]]$Token[2],
+                   id_2 = ti$value[[2]]$Token[3],
+                   id_3 = ti$value[[2]]$Token[4],
+                   amt_0,
+                   amt_1,
+                   amt_2,
+                   amt_3)
+
       }
-      out <- rbindlist(d)
-      all_data <- data.table(core_data, out)
+      params_out <- rbindlist(d)
+
+      all_data <- data.table(core_data, params_out)
       page_list[[page]] <- all_data
 
     } else {
+
       page_list[[page]] <- core_data
       params_list[[page]] <- params
+
+    }
+
+    # write the data to a file as backup
+    if (page %% 100 == 0) {
+      rd = rbindlist(page_list)
+      fwrite(rd, fname, append = FALSE)
     }
 
     # adjust for how many transaction left to pull
     nobs <- nobs - nrow(core_data)
   }
+  # write the data to a file as backup
+  rd = rbindlist(page_list)
+  fwrite(rd, fname, append = FALSE)
 
-  if (module == 'dex' & call == 'Swap') {
-    return(core_data = rbindlist(page_list))
-  } else {
-    return(list(core_data = rbindlist(page_list), params = params_list))
-  }
+  if (module == 'dex' & call == 'Swap') return(rd)
+  list(rd_data, params = params_list)
 
 }
 
