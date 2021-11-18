@@ -3,16 +3,17 @@ library(httr)
 library(jsonlite)
 library(data.table)
 
-# MUST SET `subscan_api_key` with your private api key
-# Contact api@subscan.io to ket api key
-api_header <- 'x-api-key=' %+% subscan_api_key
-
 #' Helper function wrapper to paste0()
 #' @name `%+%`
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
 `%+%` <- function(a, b) paste0(a, b)
+
+# MUST SET `subscan_api_key` with your private api key
+# Contact api@subscan.io to ket api key
+api_header <- 'x-api-key=' %+% subscan_api_key
+
 
 endpoint_list <- c("Polkadot","polkadot.api.subscan.io",
                    "Kusama","kusama.api.subscan.io",
@@ -206,7 +207,8 @@ get_subscan_metadata <- function(network = 'Karura') {
   api_host <- endpoints[network_name == network, api_host]
   api_call <- '/api/scan/metadata'
   baseurl <- paste0('https://', api_host, api_call)
-  r <- POST(baseurl, add_headers("Content-Type"="application/json"))
+  r <- POST(baseurl,
+            add_headers(api_header, 'Content-Type=application/json'))
   stop_for_status(r)
 
   content(r, as="text", encoding="UTF-8") %>%
@@ -232,10 +234,148 @@ get_subscan_metadata <- function(network = 'Karura') {
 #' @export
 get_subscan_extrinsic <- function(network = 'Karura', extrinsic = '398539-2') {
 
+  api_host <- endpoints[network_name == network, api_host]
   api_call <- '/api/scan/extrinsic'
   baseurl <- paste0('https://', api_host, api_call)
   r <- POST(baseurl,
+            add_headers(api_header, 'Content-Type=application/json'),
             body = '{"extrinsic_index": "' %+% extrinsic %+% '"}')
+  stop_for_status(r)
+  tmp <- content(r, as="text", encoding="UTF-8") %>%
+    fromJSON(flatten=TRUE)
+  tmp$data
+
+}
+
+#' Get price for a specific block time from the Subscan api
+#' https://docs.api.subscan.io
+#'
+#' @name get_subscan_price
+#' @title get_subscan_price
+#' @encoding UTF-8
+#' @concept Get price for a specific block time from the Subscan api
+#' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
+#' @param time integer block time or unix time.
+#'
+#' @return list
+#'
+#' @examples
+#' get_subscan_price(extrinsic = '398539-2')
+#'
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+get_subscan_price <- function(network = 'Karura', time = 957105) {
+
+  api_host <- endpoints[network_name == network, api_host]
+  api_call <- '/api/open/price'
+  baseurl <- paste0('https://', api_host, api_call)
+  r <- POST(baseurl,
+            add_headers(api_header, 'Content-Type=application/json'),
+            body = '{"time": ' %+% time %+% '}')
+  stop_for_status(r)
+  tmp <- content(r, as="text", encoding="UTF-8") %>%
+    fromJSON(flatten=TRUE)
+  tmp$data
+
+}
+
+#' Get average price for a date range from the Subscan api
+#' https://docs.api.subscan.io
+#'
+#' @name get_subscan_price_history
+#' @title get_subscan_price_history
+#' @encoding UTF-8
+#' @concept Get average price for a date range from the Subscan api
+#' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
+#' @param start date start time.
+#' @param end date end time.
+#'
+#' @return list
+#'
+#' @examples
+#' get_subscan_price_history(network = 'Darwinia', start = '2021-11-01', end = '2021-11-02')
+#' get_subscan_price_history(network = 'Karura', start = '2021-11-01', end = '2021-11-02')
+#'
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+get_subscan_price_history <- function(network = 'Karura', start = '2021-11-01', end = '2021-11-02') {
+
+  # network= "Polkadot"
+  api_host <- endpoints[network_name == network, api_host]
+  api_call <- '/api/scan/price/history'
+  baseurl <- paste0('https://', api_host, api_call)
+  r <- POST(baseurl,
+            add_headers(api_header, 'Content-Type=application/json'),
+            body = '{"start": "' %+% start %+% '","end": "' %+% end %+% '"}')
+  stop_for_status(r)
+  tmp <- content(r, as="text", encoding="UTF-8") %>%
+    fromJSON(flatten=TRUE)
+  tmp$data
+
+}
+
+#' Get price for a specific block time from the Subscan api
+#' https://docs.api.subscan.io
+#'
+#' @name get_subscan_price
+#' @title get_subscan_price
+#' @encoding UTF-8
+#' @concept Get price for a specific block time from the Subscan api
+#' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
+#' @param time integer block time or unix time.
+#'
+#' @return list
+#'
+#' @examples
+#' get_subscan_price(extrinsic = '398539-2')
+#'
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+get_subscan_currencies <- function(network = 'Karura') {
+
+  # network="Polkadot"
+  api_host <- endpoints[network_name == network, api_host]
+  api_call <- '/api/open/currencies'
+  baseurl <- paste0('https://', api_host, api_call)
+  r <- POST(baseurl,
+            add_headers(api_header, 'Content-Type=application/json'))
+  stop_for_status(r)
+  tmp <- content(r, as="text", encoding="UTF-8") %>%
+    fromJSON(flatten=TRUE)
+  tmp$data
+
+}
+
+#' Get the amount of the target currency base on the amount of source currency given historical price from the Subscan api
+#' https://docs.api.subscan.io
+#'
+#' @name get_subscan_price_converter
+#' @title get_subscan_price_converter
+#' @encoding UTF-8
+#' @concept Get the amount of the target currency base on the amount of source currency given historical price from the Subscan api
+#' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
+#' @param start date start time.
+#' @param end date end time.
+#'
+#' @return list
+#'
+#' @examples
+#' get_subscan_price_converter(network = 'Polkadot', time = 957105, value = 1000, from = 'USD', quote = 'DOT')
+#'
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+get_subscan_price_converter <- function(network = 'Karuka', time = 957105, value = 1000, from = 'USD', quote = 'DOT') {
+
+  # network = "Polkadot"
+  api_host <- endpoints[network_name == network, api_host]
+  api_call <- '/api/open/price_converter'
+  baseurl <- paste0('https://', api_host, api_call)
+  r <- POST(baseurl,
+            add_headers(api_header, 'Content-Type=application/json'),
+            body = '{"time": ' %+% time %+% ',
+                    "value": ' %+% value %+% ',
+                    "from": "' %+% from %+% '",
+                    "quote": "' %+% quote %+% '"}')
   stop_for_status(r)
   tmp <- content(r, as="text", encoding="UTF-8") %>%
     fromJSON(flatten=TRUE)

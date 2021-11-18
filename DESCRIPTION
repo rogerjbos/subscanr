@@ -10,4 +10,4 @@ Encoding: UTF-8
 LazyData: true
 Depends: data.table
 Imports: httr, jsonlite
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.2
