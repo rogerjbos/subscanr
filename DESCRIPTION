@@ -8,6 +8,6 @@ Description: Get Polkadot parachain data from the Subscan api
 License: GPLv3
 Encoding: UTF-8
 LazyData: true
-Depends: data.table
-Imports: httr, jsonlite
+Depends: data.table, httr, jsonlite
+Imports: 
 RoxygenNote: 7.1.2

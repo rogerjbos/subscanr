@@ -76,25 +76,20 @@ getParams <- function(p) {
 
   if (nrow(ti) == 3) {
     amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
-    amt_1 <- NA
+    amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
     amt_2 <- NA
     amt_3 <- NA
   } else if (nrow(ti) == 4) {
-    amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
-    amt_1 <- as.numeric(ti$value[[4]][1]) / 1e12
-    amt_2 <- NA
+    amt_0 <- as.numeric(ti$value[[4]][1]) / 1e12
+    amt_1 <- as.numeric(ti$value[[4]][2]) / 1e12
+    amt_2 <- as.numeric(ti$value[[4]][3]) / 1e12
     amt_3 <- NA
   } else if (nrow(ti) == 5) {
-    amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
-    amt_1 <- as.numeric(ti$value[[4]][1]) / 1e12
-    amt_2 <- as.numeric(ti$value[[5]][1]) / 1e12
-    amt_3 <- NA
-  } else if (nrow(ti) == 6) {
-    amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
-    amt_1 <- as.numeric(ti$value[[4]][1]) / 1e12
-    amt_2 <- as.numeric(ti$value[[5]][1]) / 1e12
-    amt_3 <- as.numeric(ti$value[[6]][1]) / 1e12
-  } else if (nrow(ti) > 6) {
+    amt_0 <- as.numeric(ti$value[[5]][1]) / 1e12
+    amt_1 <- as.numeric(ti$value[[5]][2]) / 1e12
+    amt_2 <- as.numeric(ti$value[[5]][3]) / 1e12
+    amt_3 <- as.numeric(ti$value[[5]][4]) / 1e12
+  } else if (nrow(ti) > 5) {
     stop("more than 4 pairs")
   }
 
@@ -126,11 +121,11 @@ getParams <- function(p) {
 #'
 #' @examples
 #' tmp <- get_subscan_events(nobs = 111); dim(tmp$core_data)
-#' tmp <- get_subscan_events(nobs = 10, network = 'Karura', ss_module = 'dex', ss_call = 'Swap')
+#' tmp <- get_subscan_events(nobs = 10, network = 'Karura', module = 'dex', call = 'Swap')
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_subscan_events <- function(nobs = 10, network = 'Karura', ss_module = '', ss_call = '') {
+get_subscan_events <- function(nobs = 10, network = 'Karura', module = '', call = '') {
 
   api_host <- endpoints[network_name == network, api_host]
   api_call <- '/api/scan/events'
@@ -143,7 +138,7 @@ get_subscan_events <- function(nobs = 10, network = 'Karura', ss_module = '', ss
   params_list <-list()
   for (page in 1:last_page) {
 
-    body <- '{"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"module": "' %+% ss_module %+% '","call": "' %+% ss_call %+% '"}'
+    body <- '{"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"module": "' %+% module %+% '","call": "' %+% call %+% '"}'
 
     r <- POST(baseurl, body = body,
               add_headers(api_header, 'Content-Type=application/json'))
@@ -159,7 +154,7 @@ get_subscan_events <- function(nobs = 10, network = 'Karura', ss_module = '', ss
 
     print(nrow(core_data) %+% " rows for page " %+% page %+% " had " %+% tmp$message %+% " at " %+% Sys.time())
 
-    if (ss_module == 'dex' & ss_call == 'Swap') {
+    if (module == 'dex' & call == 'Swap') {
       d <- list()
       for (i in 1:length(params)) {
         d[[i]] <- getParams(params[[i]])
@@ -177,7 +172,7 @@ get_subscan_events <- function(nobs = 10, network = 'Karura', ss_module = '', ss
     nobs <- nobs - nrow(core_data)
   }
 
-  if (ss_module == 'dex' & ss_call == 'Swap') {
+  if (module == 'dex' & call == 'Swap') {
     return(core_data = rbindlist(page_list))
   } else {
     return(list(core_data = rbindlist(page_list), params = params_list))
