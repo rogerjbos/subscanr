@@ -3,3 +3,4 @@
 .RData
 .Ruserdata
 Karura_events.csv
+vignette/test_file.R

@@ -116,56 +116,60 @@ get_subscan_events <- function(nobs = 10, network = 'Karura', module = '', call 
       as.data.table
     params <- core_data$params
     core_data <- core_data[, params := NULL]
-    # core_data[, time := as.POSIXct(block_timestamp, origin = "1970-01-01", tz = 'UTC')]
 
     print(nrow(core_data) %+% " rows for page " %+% page %+% " had " %+% tmp$message %+% " at " %+% Sys.time())
 
-    if (module == 'dex' & call == 'Swap') {
+    if (nrow(core_data) > 0) {
+      # add a human-readable date
+      core_data[, time := as.POSIXct(block_timestamp, origin = "1970-01-01", tz = 'UTC')]
 
-      d <- list()
-      for (i in 1:length(params)) {
-        ti <- fromJSON(params[[i]], flatten=TRUE)
+      if (module == 'dex' & call == 'Swap') {
 
-        if (length(ti$value[[3]]) == 2) {
-          amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
-          amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
-          amt_2 <- NA
-          amt_3 <- NA
-        } else if (length(ti$value[[3]]) == 3) {
-          amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
-          amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
-          amt_2 <- as.numeric(ti$value[[3]][3]) / 1e12
-          amt_3 <- NA
-        } else if (length(ti$value[[3]]) == 4) {
-          amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
-          amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
-          amt_2 <- as.numeric(ti$value[[3]][3]) / 1e12
-          amt_3 <- as.numeric(ti$value[[3]][4]) / 1e12
-        } else if (nrow(ti) > 4) {
-          stop("more than 4 pairs")
+        d <- list()
+        for (i in 1:length(params)) {
+          ti <- fromJSON(params[[i]], flatten=TRUE)
+
+          if (length(ti$value[[3]]) == 2) {
+            amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
+            amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
+            amt_2 <- NA
+            amt_3 <- NA
+          } else if (length(ti$value[[3]]) == 3) {
+            amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
+            amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
+            amt_2 <- as.numeric(ti$value[[3]][3]) / 1e12
+            amt_3 <- NA
+          } else if (length(ti$value[[3]]) == 4) {
+            amt_0 <- as.numeric(ti$value[[3]][1]) / 1e12
+            amt_1 <- as.numeric(ti$value[[3]][2]) / 1e12
+            amt_2 <- as.numeric(ti$value[[3]][3]) / 1e12
+            amt_3 <- as.numeric(ti$value[[3]][4]) / 1e12
+          } else if (nrow(ti) > 4) {
+            stop("more than 4 pairs")
+          }
+
+          d[[i]] <- data.table(account = ti$value[[1]],
+                     id_0 = ti$value[[2]]$Token[1],
+                     id_1 = ti$value[[2]]$Token[2],
+                     id_2 = ti$value[[2]]$Token[3],
+                     id_3 = ti$value[[2]]$Token[4],
+                     amt_0,
+                     amt_1,
+                     amt_2,
+                     amt_3)
+
         }
+        params_out <- rbindlist(d)
 
-        d[[i]] <- data.table(account = ti$value[[1]],
-                   id_0 = ti$value[[2]]$Token[1],
-                   id_1 = ti$value[[2]]$Token[2],
-                   id_2 = ti$value[[2]]$Token[3],
-                   id_3 = ti$value[[2]]$Token[4],
-                   amt_0,
-                   amt_1,
-                   amt_2,
-                   amt_3)
+        all_data <- data.table(core_data, params_out)
+        page_list[[page]] <- all_data
+
+      } else {
+
+        page_list[[page]] <- core_data
+        params_list[[page]] <- params
 
       }
-      params_out <- rbindlist(d)
-
-      all_data <- data.table(core_data, params_out)
-      page_list[[page]] <- all_data
-
-    } else {
-
-      page_list[[page]] <- core_data
-      params_list[[page]] <- params
-
     }
 
     # write the data to a file as backup

@@ -1,0 +1,229 @@
+---
+title: "Karura Network Analysis using Subscan API"
+author: "Roger J. Bos, CFA"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(cache = FALSE)
+
+library(cryptor)
+library(subscanr)
+library(dygraphs)
+library(htmltools)
+library(kableExtra)
+
+# Extract blockchain data using Subscan API
+# out <- get_subscan_events(nobs = 150000, network = 'Karura', module = 'dex', call = 'Swap')
+
+# To save time, I have already downloaded all the data and saved it. 
+out <- fread("/Users/rogerbos/R_HOME/subscanr/Karura_events_run2.csv")
+
+# add human-readable time column
+out[, time := as.POSIXct(block_timestamp, origin = "1970-01-01", tz = 'UTC')]
+
+# add date column
+out[, datadate := as.Date(time, tz = 'UTC')]
+
+# calculate swap price
+out[, swap_price_1 := amt_0 / amt_1]
+out[, swap_price_2 := amt_1 / amt_2]
+out[, swap_price_3 := amt_2 / amt_3]
+out[, swap_value_id_0 := amt_1 * swap_price_1]
+
+# Fee is fixed at 0.3% of swap value
+out[, swap_fee_id_0 := .003 * swap_value_id_0] # need to * price(id_0)
+
+```
+
+### Methodology
+
+In this report we briefly look at the relationship among the trading fees generated on the Karura network, the number of unique address generating those fees, and the price of the **KAR** token.  Specifically, we try to use the swap fees generated and the number of unique addresses to explain the price moves of the **KAR** token.
+
+The DEX swap data was extracted from [Subscan.io](https://www.subscan.io/) using the [subscanr](https://github.com/rogerjbos/subscanr) R package.  For the purposes of this report, only swap data was extracted, covering the period from `r min(out$time)` to `r max(out$time)` with `r format(out[, .N], nsmall=0, big.mark=",")` observations.  Using the Subscan api provides the most flexibility and the most recent data, but there is a huge downside which we didn't discover until later.
+
+The distribution of tokens observed on the Karura network is as follows:
+
+```{r, warnings = FALSE}
+kable(out[, .N, by = id_0] %>% setnames(c("Token","Observations")), big.mark=",")  %>% 
+  kable_styling(full_width = FALSE, position = "center")
+  
+```
+
+While Subscan does have a pricing api, unfortunately **Subscan does not yet support pricing on the Karura network.**^[This was confirmed by Bruce of Subscan on their [riot forum](https://riot.im/app/#/room/#subscan:matrix.org).]  Therefore the daily prices for the various tokens (**KAR**, **KSM**, and **BNC**) were downloaded from CoinGecko using the [cryptor](https://github.com/rogerjbos/cryptor) R package.  The price for **kUSD** was assumed to be 1.0 and the price for **LKSM** was assumed to be the same as **KSM** since those token prices are not available from CoinGecko.  This is a sub-optimal solution because CoinGecko only provides one price observation per day at midnight UTC, as opposed to the exact time the swap took place on the blockchain.
+
+```{r, warnings = FALSE}
+
+# Get prices from CoinGecko for KSM, KAR, BNC from 7/23/2021 to present
+ndays <- today() - as.Date('2021-07-23') + 1
+# Find CoinGecko id for given symbol
+# get_coingecko_id_from_symbol('kusd') # Kolibri USD (probably not what we want)
+# get_coingecko_id_from_symbol('bnc')
+
+# If price file has already been downloaded, no need to download again.
+if (file.exists("cg.csv")) {
+  cg <- fread("cg.csv")
+} else {
+  ksm <- get_coingecko_history(id = 'kusama', days = ndays) %>%
+    as.data.table
+  Sys.sleep(1)
+  kar <- get_coingecko_history(id = 'karura', days = ndays) %>%
+    as.data.table
+  Sys.sleep(1)
+  bnc <- get_coingecko_history(id = 'bifrost-native-coin', days = ndays) %>%
+    as.data.table
+  ksm[, date := as.Date(date, tz = 'UTC')]
+  kar[, date := as.Date(date, tz = 'UTC')]
+  bnc[, date := as.Date(date, tz = 'UTC')]
+  
+  # Remove duplicates keeping the last (insteaed of the first)
+  # (today() will have two observations per token, possibly with different times)
+  cols <- c("date","price")
+  cg <- merge(ksm[, ..cols], kar[, ..cols], by = 'date', all = TRUE)
+  cg <- merge(cg, bnc[, ..cols], by = 'date', all = TRUE)
+  setnames(cg, c("datadate","ksm_in_usd","kar_in_usd","bnc_in_usd"))
+  cg <- cg[!duplicated(datadate, fromLast = TRUE)]
+  # save price file for future use
+  fwrite(cg, file="cg.csv")
+
+}
+
+out <- merge(out, cg, by = 'datadate', all.x = TRUE)
+
+# Convert swap value into USD
+out[id_0 == 'KSM' | id_0 == 'LKSM' , swap_value_usd := swap_value_id_0 * ksm_in_usd]
+out[id_0 == 'KAR', swap_value_usd := swap_value_id_0 * kar_in_usd]
+out[id_0 == 'BNC', swap_value_usd := swap_value_id_0 * bnc_in_usd]
+out[id_0 == 'KUSD', swap_value_usd := swap_value_id_0]
+
+# Convert swap fees into USD
+out[id_0 == 'KSM' | id_0 == 'LKSM' , swap_fee_usd := swap_fee_id_0 * ksm_in_usd]
+out[id_0 == 'KAR', swap_fee_usd := swap_fee_id_0 * kar_in_usd]
+out[id_0 == 'BNC', swap_fee_usd := swap_fee_id_0 * bnc_in_usd]
+out[id_0 == 'KUSD', swap_fee_usd := swap_fee_id_0]
+
+```
+
+### Swap Fees Trends
+
+The following chart shows daily total swap fees measured in USD.  The swap fees were pretty healthy for a few weeks in the middle of August, but have been more lackluster thereafter, with the exception of a few spikes in fee volume.  We would like to examine three related questions:
+
+1) Do the swap fees adequately explain the price evolution of the native Karura network **KAR** token?
+
+2) Can we explain the nature of the periodic spikes in swap fees?
+
+3) What can we say about the decentralization of the Karura network?
+
+The charts shown in this report are interactive.  If you click on them you can hover over the data to identify the five spikes in fee volumes as occurring on August 6th, September 28th, October 14th, October 21st, and November 10th.
+
+```{r, warnings = FALSE}
+# render the dygraphs objects using htmltools
+fee1 <- out[, sum(swap_fee_usd), by = datadate] %>%
+  setnames(c("Date","Swap_Fees"))
+dygraph(fee1, main = "Karura Swap Fees in USD")
+
+```
+
+### KAR Token Price
+
+This chart shows the **KAR** token price in USD.  
+
+```{r, warnings = FALSE}
+# render the dygraphs objects using htmltools
+kar <- out[, median(kar_in_usd), by = datadate] %>%
+  setnames(c("Date","KAR"))
+dygraph(kar, main = "Karura KAR Token in USD", ylab = "Price (USD)")
+
+```
+
+We see that after closing the first day of trading on July 23th at $4.07 the token has traded mainly in the $7 to $9 range.  It reached its first peak of $9.26 on August 16th before reaching a low of $6.39 on September 9th.  Within one week from that low the **KAR** token doubled in price to $12.91 before falling back into the middle of the trading range at $7.97.  It has mostly stayed in that range since then, but it currently trading below it at $6.15.
+
+### Relationship between Swap Fees & KAR Token
+
+To explore the first question we plot both series on the same chart.  At the risk of making the chart too busy, we also add the seven day moving average of the trading fees (in purple) to smooth them out.
+
+```{r, warnings = FALSE}
+# render the dygraphs objects using htmltools
+fees <- out[, .(sum(swap_fee_usd), median(kar_in_usd)), by = datadate] %>%
+  setnames(c("Date","Swap_Fees","KAR"))
+fees[, Swap_Fee_7D := c(rep(0, 6), rollmean(Swap_Fees, k = 7))]
+dygraph(fees, main = "Karura Swap Fees (Left) & KAR in USD (Right)") %>%
+  dySeries("KAR", axis = 'y2')
+
+```
+
+The early swap fee history does a reasonable job of explaining the price moves in the **KAR** token.  The seven day average of swap fees peaked on August 12th and the **KAR** price peaked a few days later on August 16th.  Both reached a low on September 9th.  After that the relationship is much weaker.  The **KAR** token has a pump and dump run while the daily swap fees and rolling averages stay pretty flat.  Some of the spikes in swap fees coincide with mini spikes in the **KAR** token price, but others do not.  If the swap fees don't fully explain the price moves in **KAR**, what about the network effect that comes from the number of unique addresses?
+
+### Relationship between Distinct Addresses & KAR Token
+
+The following chart shows the number of unique addresses that are interacting with the Karura DEX.  Again, we also added a seven day moving average to reduce the noise in the series.
+
+```{r, warnings = FALSE}
+# render the dygraphs objects using htmltools
+addr <- out[, .(distinct_addr = length(unique(account)), median(kar_in_usd)), by = datadate] %>%
+  setnames(c("Date","Addresses","KAR"))
+addr[, Addresses_7D := c(rep(0, 6), rollmean(Addresses, k = 7))]
+dygraph(addr, main = "Karura Distinct Addresses & KAR in USD") %>%
+  dySeries("KAR", axis = 'y2')
+
+```
+
+The price of the **KAR** token does broadly correspond to the seven day moving average in the number of unique addresses, but the latter still does not explain the pump and dump around September 16th.
+
+### Relationship between Distinct Addresses & Swap Fees
+
+Now that we have briefly examined the relationship between **KAR** and swap fees and **KAR** and number of addresses, we should close the loop by examining the relationship between the swap fees and the number of addresses.
+
+```{r, warnings = FALSE}
+# render the dygraphs objects using htmltools
+addr_fees <- out[, .(sum(swap_fee_usd), length(unique(account))), by = datadate] %>%
+  setnames(c("Date","Swap Fees","Addresses"))
+dygraph(addr_fees, main = "Karura Distinct Addresses & Swap Fees") %>%
+  dySeries("Addresses", axis = 'y2')
+# dygraph(addr_fees[, .(Date, `Swap Fees`)], main = "Karura Swap Fees", group = "addr_fees")
+# dygraph(addr_fees[, .(Date, Addresses)], main = "Karura Distinct Addresses", group = "addr_fees")
+
+```
+
+Here we see a very close match between swap fees and the number of addresses generating those swap fees.  This provides strong evidence that the network is decentralized, in that many different users are utilizing it and the majority of the volume is not being driven by a handful of whales.  Along those lines, another way to measure this decentralization would be to look at the top address and see what portion of the trading fees are derived from them.
+
+### Top Addresses Interacting with the Karura DEX
+
+The table below shows the top 20 address based on swap fees and the cumulative share of total swap fees.  We see that the addresses with the highest fee volumes accounts for about 4.5% of total fee volume.  The top 10 represent 18.4% of total swap fees and the top 20 make up just over 25%.  This is out of a total of `r format(length(unique(out$account)), nsmall=0, big.mark=",")` unique addresses.  Decentralization is good for a network and it's token price.  The more decentralized a network is the larger the community and the more people there are who want to see it succeed.
+
+```{r, warnings = FALSE}
+# render the dygraphs objects using htmltools
+fees_addr <- out[, sum(swap_fee_usd), by = account]
+fees_addr <- fees_addr[, total := sum(V1)] %>%
+  setorder(-V1)
+fees_addr[, cum := cumsum(V1 / total)]
+fees_addr[, total := NULL]
+fees_addr[, Rank := 1:nrow(fees_addr)]
+setnames(fees_addr, c("Address","Total Fees","Cumulative Share","Rank"))
+cols <- c("Rank","Address","Total Fees","Cumulative Share")
+kable(fees_addr[1:20, ..cols]) %>% 
+  kable_styling(full_width = TRUE, position = "center")
+
+```
+
+### Conclusion
+
+We have analyzed the price moves of the **KAR** token during its short trading history.  We have shown that the swap fee volume and the number of unique addresses interacting with the DEX at any given time provide clues about where the **KAR** price might be headed.  The obvious exception to this statement is the large and brief run up in price on September 16th.  This is typical in crypto markets.  Fundamental data obtained from on-chain analytics only plays a small part in the trading behavior of digital assets.  Public sentiment and hype are also significant factors.  On any given day it is not unusual to find a number of tokens up 20% to 30% on no news or announcements.  Oftentimes they give most of it back over the next few days, but sometimes they do not.  As a crypto investor, it is good to use on-chain analytics to verify what you are seeing in the price action.
+
+We also looked at measures of decentralization of the Karura network by examining the relationship between the trading fees and the number of addresses utilizing the DEX.  More decentralization is a positive for both the community and the token price.  There should be more to your investment strategy than _Number Go Up_.
+
+In terms of future research, both impermanent loss and DEX arbitrage would both be very interesting topics to study, but those areas would require more accurate pricing than is currently available (at least from Subscan).  My suspicion is that the swap fee spikes might be caused by arbitrageurs trading to close price discrepancies on the DEX versus other exchanges.
+
+### Postscript
+
+The analysis in this report was done in the [R](https://www.r-project.org/) programming language and the report was written in [Rmarkdown](https://rmarkdown.rstudio.com/).  In case the reader is not familiar with Rmarkdown, we will briefly describe it, as it is one of R's most powerful features.  Rmarkdown is all about reproducible research.  It allows the researcher to combine the code and the written report into one document.  During the rendering process code is replaced with its output.  This not only avoid all the cutting and pasting that used to take place before, but also allows the reader access to the code (and often the data), aiding in the reproducibility of the research.
+
+### Sources
+
+* On-chain data is from [Subscan.io](https://www.subscan.io/)
+* Token prices are from [CoinGecko](https://www.coingecko.com/en)
+* This Rmarkdown document is available on [Github](https://github.com/rogerjbos/subscanr/tree/main/vignette)

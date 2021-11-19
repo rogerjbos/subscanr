@@ -4,7 +4,7 @@ The Subscan api supports 48 different endpoints, such as Polkadot, Kusama, Darwi
 
 *WARNING: The [subscanr](https://github.com/rogerjbos/subscanr) R package is still alpha and hasn't been fully tested.  Also, not all the available api calls have been implemented yet.*
 
-In particular, according to [the Subscan riot forum](https://riot.im/app/#/room/#subscan:matrix.org), the price feed is not yet available for the Karura endpoint.
+In particular, according to [the Subscan riot forum](https://riot.im/app/#/room/#subscan:matrix.org), the price feed is not yet available for the Karura endpoint.  Pricing should work for other endpoints.  It has been tested to work for Polkadot, Kusama, and Darwinia.
 
 You can install the package as follows:
 
@@ -27,3 +27,5 @@ subscan_api_key <- ''
 ```
 
 The vignette folder has an example of pulling in some DEX Swaps data from the Karura endpoint.  This example also uses the [cryptor](https://github.com/rogerjbos/cryptor) R package to get pricing from [CoinGecko](https://www.coingecko.com/en) since the Subscan pricing is not available yet.
+
+If you have any comments or feedback on the package, please contact me at roger [dot] bos [at] gmail [dot] com.
