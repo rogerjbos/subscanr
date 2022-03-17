@@ -81,12 +81,25 @@ endpoints <- matrix(endpoint_list, ncol = 2, byrow = TRUE) %>%
   setnames(c("network_name","api_host"))
 
 
-# curl -X POST 'https://crab.api.subscan.io/api/scan/evm/tokens' \
-# --header 'Content-Type: application/json' \
-# --header 'X-API-Key: YOUR_KEY' \
-# --data-raw '{
-#     "contracts": ["0x7139e2b08d58987a4327b11fec388536cc65d37a"]
-#   }'
+
+tokens <- rbind(c("ACA", "Acala", 12),
+                c("AUSD","Acala Dollar", 12),
+                c("DOT","Polkadot", 10),
+                c("LDOT","Liquid DOT", 10),
+                c("RENBTC","Ren Protocol BTC", 8),
+                c("CASH","Compound CASH", 8),
+                c("KAR","Karura", 12),
+                c("KUSD","Karura Dollar", 12),
+                c("KSM","Kusama", 12),
+                c("LKSM","Liquid KSM", 12),
+                c("TAI","Taiga", 12),
+                c("BNC","Bifrost Asgard", 12),
+                c("VSKSM","Bifrost Voucher Slot KSM", 12),
+                c("PHA","Phala Native Token", 12),
+                c("KINT","Kintsugi Native Token", 12),
+                c("KBTC","Kintsugi Wrapped BTC", 8)) %>%
+  as.data.table %>%
+  setnames(c("Token","Name","decimals"))
 
 
 
@@ -110,7 +123,7 @@ endpoints <- matrix(endpoint_list, ncol = 2, byrow = TRUE) %>%
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_subscan_events <- function(nobs = 100, network = 'Acala', module = '', call = '', extract = TRUE) {
+get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, module = '', call = '', extract = TRUE) {
 
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
   # nobs = 200; network = 'Acala'; module = 'dex'; call = 'Swap'; page = 1
@@ -121,11 +134,11 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', module = '', call 
   fname <- network %+% "_events.csv"
 
   # each `page` pulls in 100 rows, so calculate how many pages you need to pull
-  last_page <- ceiling(max(1, (nobs /100)))
+  last_page <- ceiling(max(1, (nobs /100))) + (start_page - 1)
 
   page_list <-list()
   params_list <-list()
-  for (page in 1:last_page) {
+  for (page in start_page:last_page) {
 
     body <- '{"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"module": "' %+% module %+% '","call": "' %+% call %+% '"}'
     if (page %% 2 == 0) Sys.sleep(1)
@@ -140,7 +153,11 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', module = '', call 
     params <- core_data$params
     core_data <- core_data[, params := NULL]
 
-    print(nrow(core_data) %+% " rows for page " %+% page %+% " had " %+% tmp$message %+% " at " %+% Sys.time())
+    print(nrow(core_data) %+% " rows for page " %+% page %+% "/" %+% last_page %+% " " %+% tmp$message %+% " at " %+% Sys.time())
+    if (nrow(core_data) == 0) {
+      page <- last_page
+      break
+    }
 
     page_list[[page]] <- core_data
     params_list[[page]] <- params
