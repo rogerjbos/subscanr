@@ -126,7 +126,7 @@ tokens <- rbind(c("ACA", "Acala", 12),
 get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, module = '', call = '', extract = TRUE) {
 
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
-  # nobs = 200; network = 'Acala'; module = 'dex'; call = 'Swap'; page = 1
+  # nobs = 500; network = 'Acala'; module = 'auctionmanager'; call = ''; page = 1; start_page = 1
 
   api_host <- endpoints[network_name == network, api_host]
   api_call <- '/api/scan/events'
@@ -141,6 +141,7 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, mo
   for (page in start_page:last_page) {
 
     body <- '{"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"module": "' %+% module %+% '","call": "' %+% call %+% '"}'
+    # body <- '{"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"module": "' %+% module %+% '"}'
     if (page %% 2 == 0) Sys.sleep(1)
     r <- POST(baseurl, body = body,
               add_headers(api_header, 'Content-Type=application/json'))
@@ -151,16 +152,20 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, mo
     core_data <- tmp$data$events %>%
       as.data.table
     params <- core_data$params
-    core_data <- core_data[, params := NULL]
 
-    print(nrow(core_data) %+% " rows for page " %+% page %+% "/" %+% last_page %+% " " %+% tmp$message %+% " at " %+% Sys.time())
     if (nrow(core_data) == 0) {
       page <- last_page
-      break
+      # break
+    } else {
+      core_data <- core_data[, params := NULL]
+
+      print(nrow(core_data) %+% " rows for page " %+% page %+% "/" %+% last_page %+% " " %+% tmp$message %+% " at " %+% Sys.time())
+      page_list[[page]] <- core_data
+      params_list[[page]] <- params
+
     }
 
-    page_list[[page]] <- core_data
-    params_list[[page]] <- params
+
 
   }
   core_data <- rbindlist(page_list)
@@ -172,6 +177,14 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, mo
 
 }
 
+
+tmp <- get_subscan_events(nobs = 500,
+                          network,
+                          module,
+                          call,
+                          start_page = 1,
+                          extract = FALSE)
+test <- extract_events(tmp$core_data, tmp$params)
 
 
 extract_events <- function(core_data, params) {
@@ -209,13 +222,29 @@ extract_events <- function(core_data, params) {
     if (any(core_data$module_id %in% c('treasury'))) {
       treasury_Deposited_list <- list()
     }
+    if (any(core_data$module_id %in% c('auctionmanager'))) {
+      auctionmanager_DEXTakeCollateralAuction_list <- list()
+      auctionmanager_CollateralAuctionDealt_list <- list()
+    }
 
     for (i in 1:length(params)) {
         ti <- fromJSON(params[[i]], flatten=TRUE)
         ti
 
 
-        if (core_data[i, module_id] == "treasury") {
+        if (core_data[i, module_id] == "auctionmanager") {
+          if (core_data[i, event_id] == "DEXTakeCollateralAuction") {
+            out <- data.table(t(ti$value))
+            out[,2] <- ifelse(names(ti$value[[2]])=="Token", ti$value[[2]]$Token, names(ti$value[[2]]) %+% "://" %+%  ti$value[[2]][[1]])
+            names(out) <- c("AuctionId","CurrencyId","CollateralAmount","SupplyCollateralAmount","TargetStableAmount")
+            auctionmanager_DEXTakeCollateralAuction_list[[i]] <- data.table(core_data[i], out)
+          } else if (core_data[i, event_id] == "CollateralAuctionDealt") {
+            out <- data.table(t(ti$value))
+            out[,2] <- ifelse(names(ti$value[[2]])=="Token", ti$value[[2]]$Token, names(ti$value[[2]]) %+% "://" %+%  ti$value[[2]][[1]])
+            names(out) <- c("AuctionId","CurrencyId","CollateralAmount","WinnerId","PaymentAmount")
+            auctionmanager_CollateralAuctionDealt_list[[i]] <- data.table(core_data[i], out)
+          }
+        } else if (core_data[i, module_id] == "treasury") {
             out <- data.table("BalanceOf" = ti$value[[1]])
             treasury_Deposited_list[[i]] <- data.table(core_data[i], out)
         } else if (core_data[i, module_id] == "incentives") {
@@ -512,14 +541,31 @@ extract_events <- function(core_data, params) {
   }
 
   if (any(core_data$module_id %in% c('treasury'))) {
-      if (length(treasury_Deposited_list) > 0) {
-        treasury_Deposited <- rbindlist(treasury_Deposited_list)
-      } else {
-        treasury_Deposited <- NULL
-      }
-      out <- list(out,
-                  treasury_Deposited = treasury_Deposited)
+    if (length(treasury_Deposited_list) > 0) {
+      treasury_Deposited <- rbindlist(treasury_Deposited_list)
+    } else {
+      treasury_Deposited <- NULL
+    }
+    out <- list(out,
+                treasury_Deposited = treasury_Deposited)
 
+  }
+
+  if (any(core_data$module_id %in% c('auctionmanager'))) {
+    if (length(auctionmanager_DEXTakeCollateralAuction_list) > 0) {
+      auctionmanager_DEXTakeCollateralAuction <- rbindlist(auctionmanager_DEXTakeCollateralAuction_list)
+    } else {
+      auctionmanager_DEXTakeCollateralAuction <- NULL
+    }
+    if (length(auctionmanager_CollateralAuctionDealt_list) > 0) {
+      auctionmanager_CollateralAuctionDealt <- rbindlist(auctionmanager_CollateralAuctionDealt_list)
+    } else {
+      auctionmanager_CollateralAuctionDealt <- NULL
+    }
+
+    out <- list(out,
+                auctionmanager_DEXTakeCollateralAuction = auctionmanager_DEXTakeCollateralAuction,
+                auctionmanager_CollateralAuctionDealt = auctionmanager_CollateralAuctionDealt)
   }
 
   out
