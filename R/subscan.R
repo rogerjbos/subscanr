@@ -126,7 +126,7 @@ tokens <- rbind(c("ACA", "Acala", 12),
 get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, module = '', call = '', extract = TRUE) {
 
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
-  # nobs = 500; network = 'Acala'; module = 'auctionmanager'; call = ''; page = 1; start_page = 1
+  # nobs = 500; network = 'Karura'; module = 'auctionmanager'; call = ''; page = 1; start_page = 1
 
   api_host <- endpoints[network_name == network, api_host]
   api_call <- '/api/scan/events'
@@ -177,16 +177,6 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, mo
 
 }
 
-
-tmp <- get_subscan_events(nobs = 500,
-                          network,
-                          module,
-                          call,
-                          start_page = 1,
-                          extract = FALSE)
-test <- extract_events(tmp$core_data, tmp$params)
-
-
 extract_events <- function(core_data, params) {
 # core_data <- tmp$core_data; params <- tmp$params
 
@@ -236,7 +226,13 @@ extract_events <- function(core_data, params) {
           if (core_data[i, event_id] == "DEXTakeCollateralAuction") {
             out <- data.table(t(ti$value))
             out[,2] <- ifelse(names(ti$value[[2]])=="Token", ti$value[[2]]$Token, names(ti$value[[2]]) %+% "://" %+%  ti$value[[2]][[1]])
-            names(out) <- c("AuctionId","CurrencyId","CollateralAmount","SupplyCollateralAmount","TargetStableAmount")
+            if (ncol(out) == 5) {
+              names(out) <- c("AuctionId","CurrencyId","CollateralAmount","SupplyCollateralAmount","TargetStableAmount")
+              out[, tradePrice := as.numeric(TargetStableAmount) / as.numeric(SupplyCollateralAmount)]
+            } else {
+              names(out) <- c("AuctionId","CurrencyId","CollateralAmount","TargetStableAmount")
+              out[, tradePrice := as.numeric(TargetStableAmount) / as.numeric(CollateralAmount)]
+            }
             auctionmanager_DEXTakeCollateralAuction_list[[i]] <- data.table(core_data[i], out)
           } else if (core_data[i, event_id] == "CollateralAuctionDealt") {
             out <- data.table(t(ti$value))
