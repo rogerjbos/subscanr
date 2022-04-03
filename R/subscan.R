@@ -228,10 +228,8 @@ extract_events <- function(core_data, params) {
             out[,2] <- ifelse(names(ti$value[[2]])=="Token", ti$value[[2]]$Token, names(ti$value[[2]]) %+% "://" %+%  ti$value[[2]][[1]])
             if (ncol(out) == 5) {
               names(out) <- c("AuctionId","CurrencyId","CollateralAmount","SupplyCollateralAmount","TargetStableAmount")
-              out[, tradePrice := as.numeric(TargetStableAmount) / as.numeric(SupplyCollateralAmount)]
             } else {
-              names(out) <- c("AuctionId","CurrencyId","CollateralAmount","TargetStableAmount")
-              out[, tradePrice := as.numeric(TargetStableAmount) / as.numeric(CollateralAmount)]
+              names(out) <- c("AuctionId","CurrencyId","SupplyCollateralAmount","TargetStableAmount")
             }
             auctionmanager_DEXTakeCollateralAuction_list[[i]] <- data.table(core_data[i], out)
           } else if (core_data[i, event_id] == "CollateralAuctionDealt") {
