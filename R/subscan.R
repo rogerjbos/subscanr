@@ -126,7 +126,7 @@ tokens <- rbind(c("ACA", "Acala", 12),
 get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, module = '', call = '', extract = TRUE) {
 
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
-  # nobs = 500; network = 'Karura'; module = 'auctionmanager'; call = ''; page = 1; start_page = 1
+  # nobs = 5000; network = 'Acala'; module = 'cdpengine'; call = ''; page = 1; start_page = 1
 
   api_host <- endpoints[network_name == network, api_host]
   api_call <- '/api/scan/events'
@@ -170,6 +170,7 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, mo
   }
   core_data <- rbindlist(page_list)
   params <- do.call("c", params_list)
+
 
   if (extract) return(extract_events(core_data, params))
 
@@ -216,13 +217,27 @@ extract_events <- function(core_data, params) {
       auctionmanager_DEXTakeCollateralAuction_list <- list()
       auctionmanager_CollateralAuctionDealt_list <- list()
     }
+    if (any(core_data$module_id %in% c('cdpengine'))) {
+      cdpengine_LiquidateUnsafeCDP_list <- list()
+    }
 
     for (i in 1:length(params)) {
         ti <- fromJSON(params[[i]], flatten=TRUE)
         ti
 
-
-        if (core_data[i, module_id] == "auctionmanager") {
+        if (core_data[i, module_id] == "cdpengine") {
+          if (core_data[i, event_id] == "LiquidateUnsafeCDP") {
+            out <- data.table(t(ti$value))
+            out[,1] <- ifelse(names(ti$value[[1]])=="Token", ti$value[[1]]$Token, names(ti$value[[1]]) %+% "://" %+%  ti$value[[1]][[1]])
+            out[,5] <- names(ti$value[[5]]) %+% ":" %+%  ti$value[[5]][[1]]
+            # if (network == 'Acala') {
+            #   names(out) <- c("CurrencyId","AuctionId","CollateralAmount","BadDebtValue","TargetAmount")
+            # } else {
+            names(out) <- c("CurrencyId","AuctionId","CollateralAmount","BadDebtValue","LiquidationStrategy")
+            # }
+            cdpengine_LiquidateUnsafeCDP_list[[i]] <- data.table(core_data[i], out)
+          }
+        } else if (core_data[i, module_id] == "auctionmanager") {
           if (core_data[i, event_id] == "DEXTakeCollateralAuction") {
             out <- data.table(t(ti$value))
             out[,2] <- ifelse(names(ti$value[[2]])=="Token", ti$value[[2]]$Token, names(ti$value[[2]]) %+% "://" %+%  ti$value[[2]][[1]])
@@ -560,6 +575,17 @@ extract_events <- function(core_data, params) {
     out <- list(out,
                 auctionmanager_DEXTakeCollateralAuction = auctionmanager_DEXTakeCollateralAuction,
                 auctionmanager_CollateralAuctionDealt = auctionmanager_CollateralAuctionDealt)
+  }
+
+  if (any(core_data$module_id %in% c('cdpengine'))) {
+    if (length(cdpengine_LiquidateUnsafeCDP_list) > 0) {
+      cdpengine_LiquidateUnsafeCDP <- rbindlist(cdpengine_LiquidateUnsafeCDP_list)
+    } else {
+      cdpengine_LiquidateUnsafeCDP <- NULL
+    }
+
+    out <- list(out,
+                cdpengine_LiquidateUnsafeCDP = cdpengine_LiquidateUnsafeCDP)
   }
 
   out
