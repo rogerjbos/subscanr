@@ -119,14 +119,14 @@ tokens <- rbind(c("ACA", "Acala", 12),
 #'
 #' @examples
 #' tmp <- get_subscan_events(nobs = 111); dim(tmp$core_data)
-#' tmp <- get_subscan_events(nobs = 10, network = 'Acala', module = 'dex', call = 'Swap')
+#' tmp <- get_subscan_events(nobs = 10, network = 'Karura', module = 'dex', call = 'Swap')
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
 get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, module = '', call = '', extract = TRUE) {
 
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
-  # nobs = 5000; network = 'Acala'; module = 'cdpengine'; call = ''; page = 1; start_page = 1
+  # nobs = 5; network = 'Acala'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
 
   api_host <- endpoints[network_name == network, api_host]
   api_call <- '/api/scan/events'
@@ -390,7 +390,21 @@ extract_events <- function(core_data, params) {
               out[, j + 1] <- ids$Token[j]
               out[, j + 5] <- amts[j]
             }
+
             names(out) <- c("account","token0","token1","token2","token3","amount0","amount1","amount2","amount3")
+
+            out[, token0 := fixToken(token0)]
+            out[, token1 := fixToken(token1)]
+            out[, token2 := fixToken(token2)]
+            out[, token3 := fixToken(token3)]
+            # Normalize pairs
+            out[, pair0 := paste0(token0 %+% ":" %+% token1)]
+            out[token1 < token0, pair0 := paste0(token1 %+% ":" %+% token0)]
+            out[, pair1 := paste0(token1 %+% ":" %+% token2)]
+            out[token2 < token1, pair1 := paste0(token2 %+% ":" %+% token1)]
+            out[, pair2 := paste0(token2 %+% ":" %+% token3)]
+            out[token3 < token2, pair2 := paste0(token3 %+% ":" %+% token2)]
+
             dex_Swap_list[[i]] <- data.table(core_data[i], out)
           }
         } else if (core_data[i, module_id] == "zenlinkprotocol") {
