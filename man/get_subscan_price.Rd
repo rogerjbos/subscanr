@@ -6,9 +6,9 @@
 \alias{get_subscan_currencies}
 \title{get_subscan_price}
 \usage{
-get_subscan_price(network = "Karura", time = 957105)
+get_subscan_price(network = "Polkadot", time = 957105)
 
-get_subscan_currencies(network = "Karura")
+get_subscan_currencies(network = "Polkadot")
 }
 \arguments{
 \item{network}{string indicating which Polkadot endpoint to use; defaults to 'Karura'.}
@@ -28,9 +28,9 @@ Get price for a specific block time from the Subscan api
 https://docs.api.subscan.io
 }
 \examples{
-get_subscan_price(extrinsic = '398539-2')
+get_subscan_price()
 
-get_subscan_price(extrinsic = '398539-2')
+get_subscan_currencies('Polkadot')
 
 }
 \author{

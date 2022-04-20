@@ -5,16 +5,24 @@
 \alias{get_subscan_events}
 \title{get_subscan_events}
 \usage{
-get_subscan_events(nobs = 10, network = "Karura", ss_module = "", ss_call = "")
+get_subscan_events(
+  nobs = 100,
+  network = "Acala",
+  start_page = 1,
+  module = "",
+  call = "",
+  block = NULL,
+  extract = TRUE
+)
 }
 \arguments{
 \item{nobs}{integer how many transactions to pull}
 
 \item{network}{string indicating which Polkadot endpoint to use; defaults to 'Karura'.}
 
-\item{ss_module}{string indicating which module to pull; leave blank for all.}
+\item{module}{string indicating which module to pull; leave blank for all.}
 
-\item{ss_call}{string indicating which function call to pull; leave blank for all.}
+\item{call}{string indicating which function call to pull; leave blank for all.}
 }
 \value{
 data.table
@@ -25,7 +33,7 @@ https://docs.api.subscan.io
 }
 \examples{
 tmp <- get_subscan_events(nobs = 111); dim(tmp$core_data)
-tmp <- get_subscan_events(nobs = 10, network = 'Karura', ss_module = 'dex', ss_call = 'Swap')
+tmp <- get_subscan_events(nobs = 10, network = 'Karura', module = 'dex', call = 'Swap')
 
 }
 \author{

@@ -1,7 +1,16 @@
 # Contact api@subscan.io to ket api key
+library(data.table)
 library(httr)
 library(jsonlite)
-library(data.table)
+library(dplyr)
+library(ghql)
+x <- GraphqlClient$new()
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+mysort <- function(a, b) {
+  ifelse(a < b, a %+% ":" %+% b, b %+% ":" %+% a)
+}
 
 #' Helper function wrapper to paste0()
 #' @name `%+%`
@@ -11,7 +20,8 @@ library(data.table)
 `%+%` <- function(a, b) paste0(a, b)
 
 # MUST SET `subscan_api_key` with your private api key
-# Contact api@subscan.io to ket api key
+# Contact api@subscan.io to get api key
+if (!exists("subscan_api_key")) subscan_api_key <- ""
 api_header <- 'x-api-key=' %+% subscan_api_key
 
 
@@ -47,7 +57,7 @@ endpoint_list <- c("Polkadot","polkadot.api.subscan.io",
                    "Kulupu","kulupu.api.subscan.io",
                    "Khala","khala.api.subscan.io",
                    "KILT Peregrine","kilt-testnet.api.subscan.io",
-                   "KILT Spiritnet	spiritnet.api.subscan.io",
+                   "KILT Spiritnet","spiritnet.api.subscan.io",
                    "Laminar TC2","laminar-testnet.api.subscan.io",
                    "Litentry","litentry.api.subscan.io",
                    "Manta","manta-testnet.api.subscan.io",
@@ -76,31 +86,8 @@ endpoint_list <- c("Polkadot","polkadot.api.subscan.io",
                    "Statemine","statemine.api.subscan.io",
                    "Uniarts","uniarts.api.subscan.io",
                    "Westend","westend.api.subscan.io")
-endpoints <- matrix(endpoint_list, ncol = 2, byrow = TRUE) %>%
-  as.data.table %>%
-  setnames(c("network_name","api_host"))
-
-
-
-tokens <- rbind(c("ACA", "Acala", 12),
-                c("AUSD","Acala Dollar", 12),
-                c("DOT","Polkadot", 10),
-                c("LDOT","Liquid DOT", 10),
-                c("RENBTC","Ren Protocol BTC", 8),
-                c("CASH","Compound CASH", 8),
-                c("KAR","Karura", 12),
-                c("KUSD","Karura Dollar", 12),
-                c("KSM","Kusama", 12),
-                c("LKSM","Liquid KSM", 12),
-                c("TAI","Taiga", 12),
-                c("BNC","Bifrost Asgard", 12),
-                c("VSKSM","Bifrost Voucher Slot KSM", 12),
-                c("PHA","Phala Native Token", 12),
-                c("KINT","Kintsugi Native Token", 12),
-                c("KBTC","Kintsugi Wrapped BTC", 8)) %>%
-  as.data.table %>%
-  setnames(c("Token","Name","decimals"))
-
+endpoints <- as.data.table(matrix(endpoint_list, ncol = 2, byrow = TRUE))
+setnames(endpoints, c("network_name","api_host"))
 
 
 #' Get events from the Polkadot blockchain from the Subscan api
@@ -123,28 +110,36 @@ tokens <- rbind(c("ACA", "Acala", 12),
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, module = '', call = '', extract = TRUE) {
+get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, module = '', call = '', block = NULL, extract = TRUE) {
 
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
-  # nobs = 5; network = 'Acala'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
+  # nobs = 500; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
 
   api_host <- endpoints[network_name == network, api_host]
+  # if (v2 == TRUE) {
+  #   api_call <- '/api/v2/scan/events'
+  #   fname <- network %+% "_events_v2.csv"
+  # } else {
   api_call <- '/api/scan/events'
-  baseurl <- paste0('https://', api_host, api_call)
   fname <- network %+% "_events.csv"
+  # }
+  baseurl <- paste0('https://', api_host, api_call)
 
   # each `page` pulls in 100 rows, so calculate how many pages you need to pull
-  last_page <- ceiling(max(1, (nobs /100))) + (start_page - 1)
+  last_page <- ceiling(max(1, (nobs / 100))) + (start_page - 1)
 
   page_list <-list()
   params_list <-list()
   for (page in start_page:last_page) {
+    if (page %% 2 == 0) Sys.sleep(2)
 
-    body <- '{"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"module": "' %+% module %+% '","call": "' %+% call %+% '"}'
-    # body <- '{"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"module": "' %+% module %+% '"}'
-    if (page %% 2 == 0) Sys.sleep(1)
+    # if (is.null(block)) {
+    body <- ' {"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"module": "' %+% module %+% '","call": "' %+% call %+% '"}'
+    # } else {
+    #   body <- ' {"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ', "block_num": ' %+% as.numeric(block) %+% '}'
+    # }
     r <- POST(baseurl, body = body,
-              add_headers(api_header, 'Content-Type=application/json'))
+              add_headers(api_header, 'Content-Type: application/json'))
     stop_for_status(r)
     tmp <- content(r, as="text", encoding="UTF-8") %>%
       fromJSON(flatten=TRUE)
@@ -155,7 +150,6 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, mo
 
     if (nrow(core_data) == 0) {
       page <- last_page
-      # break
     } else {
       core_data <- core_data[, params := NULL]
 
@@ -230,11 +224,7 @@ extract_events <- function(core_data, params) {
             out <- data.table(t(ti$value))
             out[,1] <- ifelse(names(ti$value[[1]])=="Token", ti$value[[1]]$Token, names(ti$value[[1]]) %+% "://" %+%  ti$value[[1]][[1]])
             out[,5] <- names(ti$value[[5]]) %+% ":" %+%  ti$value[[5]][[1]]
-            # if (network == 'Acala') {
-            #   names(out) <- c("CurrencyId","AuctionId","CollateralAmount","BadDebtValue","TargetAmount")
-            # } else {
             names(out) <- c("CurrencyId","AuctionId","CollateralAmount","BadDebtValue","LiquidationStrategy")
-            # }
             cdpengine_LiquidateUnsafeCDP_list[[i]] <- data.table(core_data[i], out)
           }
         } else if (core_data[i, module_id] == "auctionmanager") {
@@ -805,3 +795,7 @@ get_subscan_price_converter <- function(network = 'Karuka', time = 957105, value
   tmp$data
 
 }
+
+
+
+

@@ -19,7 +19,7 @@ https://docs.api.subscan.io
 }
 \examples{
 get_subscan_metadata()
-get_subscan_metadata(network = 'Darwinia')
+get_subscan_metadata(network = 'Acala')
 
 }
 \author{

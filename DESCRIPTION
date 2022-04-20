@@ -4,10 +4,10 @@ Title: Subscan Api for R
 Version: 0.0.1
 Author: Roger J. Bos, CFA
 Maintainer: Roger J. Bos, CFA <roger.bos@gmail.com>
-Description: Get Polkadot parachain data from the Subscan api
+Description: Get Polkadot/Kusama parachain data from the Subscan api
 License: GPLv3
 Encoding: UTF-8
 LazyData: true
 Depends: data.table, httr, jsonlite
-Imports: 
+Imports:
 RoxygenNote: 7.1.2

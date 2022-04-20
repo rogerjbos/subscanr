@@ -27,7 +27,6 @@ https://docs.api.subscan.io
 }
 \examples{
 get_subscan_price_history(network = 'Darwinia', start = '2021-11-01', end = '2021-11-02')
-get_subscan_price_history(network = 'Karura', start = '2021-11-01', end = '2021-11-02')
 
 }
 \author{
