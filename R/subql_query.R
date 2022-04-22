@@ -65,6 +65,24 @@ tokens <- as.data.table(rbind(c("ACA", "Acala", 12),
 setnames(tokens, c("Token","Name","decimals"))
 try(tokens[, divisor := (as.numeric(substr(as.character(1e20), 1, as.numeric(decimals) + 1))), by = Token], silent = TRUE)
 
+# Query function for very simple queries
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+get_query <- function(url, query) {
+
+  # url <- 'https://api.subquery.network/sq/AcalaNetwork/karura-tokens'
+  # query <- 'query { accountBalances (first: 5) { nodes { id accountId tokenId total } } }'
+
+  method = "test"
+  cli <- GraphqlClient$new(url)
+  qry <- Query$new()
+  qry$query(method, query)
+
+  result <- cli$exec(qry$queries[[method]])  %>%
+    fromJSON(flatten=TRUE)
+  result
+
+}
 
 
 # Helper function used by all the other query calls
