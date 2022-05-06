@@ -48,6 +48,7 @@ fixToken <- function(x) {
   x <- gsub('LiquidCrowdloan://13', 'LCDOT', x)
   x <- gsub('sa://0', 'taiKSM', x)
   x <- gsub('StableAssetPoolToken://0', 'taiKSM', x)
+  x <- gsub('KUSD', 'AUSD', x)
   x
 }
 
@@ -98,7 +99,7 @@ get_query <- function(url, query) {
 # Helper function used by all the other query calls
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_graph <- function(endpoint, method, edges, window, filter = "timestamp") {
+get_graph <- function(endpoint, method, edges, window, filter = "timestamp", endpage = 1000) {
 
 
   cli <- GraphqlClient$new(url = endpoint)
@@ -114,11 +115,11 @@ get_graph <- function(endpoint, method, edges, window, filter = "timestamp") {
   }
   cursor <- ''
   resList <- list()
-  for (i in 1:1000) {
+  for (i in 1:endpage) {
     if (cursor == '') {
-      cursorStr <- 'first:100'
+      cursorStr <- ' first:100'
     } else {
-      cursorStr <- 'first:100 after:"' %+% cursor %+% '"'
+      cursorStr <- ' first:100 after:"' %+% cursor %+% '"'
     }
     qry <- Query$new()
     qry$query(method, '
@@ -231,9 +232,9 @@ getLiquidity_acala <- function(endpoint, window) {
 getLoansCollateralParams_acala_loan <- function(network) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/rogerjbos/acala-loan-subql"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/rogerjbos/karura-loan-subql"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
@@ -263,9 +264,9 @@ getLoansCollateralParams_acala_loan <- function(network) {
 getLoansDailyPositions_acala_loan <- function(network, window) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/rogerjbos/acala-loan-subql"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/rogerjbos/karura-loan-subql"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
@@ -344,9 +345,9 @@ getLoansDailyPositions_acala_loan <- function(network, window) {
 getLoansDailyCollateral_acala_loan <- function(network, window) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/rogerjbos/acala-loan-subql"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/rogerjbos/karura-loan-subql"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
@@ -474,9 +475,9 @@ getSwaps_acala <- function(network, window, block = NULL) {
 getLiquidateUnsafeCDP_acala_loan <- function(network, window) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/rogerjbos/acala-loan-subql"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/rogerjbos/karura-loan-subql"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
@@ -500,3 +501,58 @@ getLiquidateUnsafeCDP_acala_loan <- function(network, window) {
   res
 
 }
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getAccountBalance_acala_token <- function(network, window, filter = '', endpage = 2000) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-tokens"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-tokens"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+
+  method <- "accountBalances"
+  edges <- "accountId tokenId total"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+  # unique(res$tokenId)
+
+  res[, tokenId := fixToken(tokenId)]
+  res <- merge(res, tokens, by.x='tokenId', by.y='Token')
+  res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
+  res[, total := as.numeric(total) / adj]
+  res[, Name := NULL]
+  res
+
+}
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getPositions_acala_loan <- function(network, window, filter, endpage = 2000) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+
+  # filter <- 'filter: {collateralId: {in: ["ACA","DOT","LDOT","KSM","LKSM"]}} '; endpage <- 2
+  method <- "positions"
+  edges <- "ownerId collateralId txCount depositAmount debitAmount"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+
+  res[, collateralId := fixToken(collateralId)]
+  res <- merge(res, tokens, by.x='collateralId', by.y='Token')
+  res[, Name := NULL]
+
+  res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
+  res[, depositAmount := as.numeric(depositAmount) / adj]
+  res[, debitAmount := as.numeric(debitAmount) / adj]
+  res
+
+}
+
