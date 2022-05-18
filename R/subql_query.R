@@ -39,7 +39,7 @@ fixToken <- function(x) {
   x <- gsub('fa://2', 'QTZ', x)
   x <- gsub('ForeignAsset://2', 'QTZ', x)
   x <- gsub('fa://3', 'MOVRZ', x)
-  x <- gsub('ForeignAsset://3', 'MOVRZ', x)
+  x <- gsub('ForeignAsset://3', 'MOVR', x)
   x <- gsub('fa://4', 'HKO', x)
   x <- gsub('ForeignAsset://4', 'HKO', x)
   x <- gsub('fa://5', 'CSM', x)
@@ -54,27 +54,48 @@ fixToken <- function(x) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-tokens <- as.data.table(rbind(c("ACA", "Acala", 12),
-                c("AUSD","Acala Dollar", 12),
-                c("taiKSM","Taiga KSM", 12),
-                c("RMRK","RMRK", 10),
-                c("DOT","Polkadot", 10),
-                c("LCDOT","Liquid Crowdloan DOT", 10),
-                c("LDOT","Liquid DOT", 10),
-                c("RENBTC","Ren Protocol BTC", 8),
-                c("CASH","Compound CASH", 8),
-                c("KAR","Karura", 12),
-                c("KUSD","Karura Dollar", 12),
-                c("KSM","Kusama", 12),
-                c("LKSM","Liquid KSM", 12),
-                c("TAI","Taiga", 12),
-                c("BNC","Bifrost Asgard", 12),
-                c("VSKSM","Bifrost Voucher Slot KSM", 12),
-                c("PHA","Phala Native Token", 12),
-                c("KINT","Kintsugi Native Token", 12),
-                c("KBTC","Kintsugi Wrapped BTC", 8)))
+#'
+#'
+tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
+                              c("ACA", "Acala", 12),
+                              c("AIR","Altair", 18),
+                              c("ARIS","PolarisDAO", 8),
+                              c("AUSD","Acala Dollar", 12),
+                              c("BNC","Bifrost Asgard", 12),
+                              c("BSX","Basilisk", 12),
+                              c("CASH","Compound CASH", 8),
+                              c("CRAB","Crab Parachain Token", 18),
+                              c("CSM","Crust Storage Market", 12),
+                              c("taiKSM","Taiga KSM", 12),
+                              c("DOT","Polkadot", 10),
+                              c("EQD","Equilibrium USD", 9),
+                              c("GENS","Genshiro Native Token", 9),
+                              c("HKO","Heiko", 12),
+                              c("KAR","Karura", 12),
+                              c("KBTC","Kintsugi Wrapped BTC", 8),
+                              c("KICO","KICO", 14),
+                              c("KINT","Kintsugi Native Token", 12),
+                              c("KMA","Calamri", 12),
+                              c("KSM","Kusama", 12),
+                              c("KUSD","Karura Dollar", 12),
+                              c("LCDOT","Liquid Crowdloan DOT", 10),
+                              c("LDOT","Liquid DOT", 10),
+                              c("LKSM","Liquid KSM", 12),
+                              c("MOVR","Moonriver", 18),
+                              c("NEER","Metaverse.Network Pioneer", 18),
+                              c("PHA","Phala Native Token", 12),
+                              c("QTZ","Quartz", 12),
+                              c("RMRK","Remark", 10),
+                              c("RENBTC","Ren Protocol BTC", 8),
+                              c("TAI","Taiga", 12),
+                              c("taiKSM","Taiga KSM", 12),
+                              c("TEER","Integritee Trusted Execution Environment", 12),
+                              c("USDC","USD Coin (Wormhole)", 6),
+                              c("USDT","Tether USD", 6),
+                              c("VSKSM","Bifrost Voucher Slot KSM", 12)))
 setnames(tokens, c("Token","Name","decimals"))
 try(tokens[, divisor := (as.numeric(substr(as.character(1e20), 1, as.numeric(decimals) + 1))), by = Token], silent = TRUE)
+
 
 # Query function for very simple queries
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
@@ -501,6 +522,39 @@ getLiquidateUnsafeCDP_acala_loan <- function(network, window) {
   res
 
 }
+
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getAccountBalance_moonbeam_token <- function(network, window = 1, filter = '', endpage = 2000) {
+
+  if (tolower(network) == 'moonbeam') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-tokens"
+    #
+  } else if (tolower(network) == 'moonriver') {
+    endpoint <- "https://api.subquery.network/sq/bizzyvinci/moonriver"
+    # https://github.com/bizzyvinci/moonriver-unified-subquery
+    token_id <- "KSM"
+  } else {
+    stop("Network not found; must be one of 'moonbeam' or 'moonriver'")
+  }
+
+  if (filter == "") filter <- ' filter: {freeBalance: {greaterThan: "0"}} '
+  method <- "accounts"
+  edges <- "id freeBalance"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+  # unique(res$tokenId)
+
+  res[, tokenId := token_id]
+  res <- merge(res, tokens, by.x='tokenId', by.y='Token')
+  res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
+  res[, total := as.numeric(total) / adj]
+  res[, Name := NULL]
+  res
+
+}
+
+# KSM on shiden: 340,282,366,920,938,463,463,374,607,431,768,211,455
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export

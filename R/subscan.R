@@ -114,6 +114,7 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, mo
 
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
   # nobs = 500; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
+  # nobs = 5000; network = 'Karura'; module = 'auctionmanager'; call = ''; start_page = 1; extract = TRUE
 
   api_host <- endpoints[network_name == network, api_host]
   # if (v2 == TRUE) {
@@ -164,7 +165,6 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, mo
   }
   core_data <- rbindlist(page_list)
   params <- do.call("c", params_list)
-
 
   if (extract) return(extract_events(core_data, params))
 
@@ -566,12 +566,12 @@ extract_events <- function(core_data, params) {
 
   if (any(core_data$module_id %in% c('auctionmanager'))) {
     if (length(auctionmanager_DEXTakeCollateralAuction_list) > 0) {
-      auctionmanager_DEXTakeCollateralAuction <- rbindlist(auctionmanager_DEXTakeCollateralAuction_list)
+      auctionmanager_DEXTakeCollateralAuction <- rbindlist(auctionmanager_DEXTakeCollateralAuction_list, fill = TRUE)
     } else {
       auctionmanager_DEXTakeCollateralAuction <- NULL
     }
     if (length(auctionmanager_CollateralAuctionDealt_list) > 0) {
-      auctionmanager_CollateralAuctionDealt <- rbindlist(auctionmanager_CollateralAuctionDealt_list)
+      auctionmanager_CollateralAuctionDealt <- rbindlist(auctionmanager_CollateralAuctionDealt_list, fill = TRUE)
     } else {
       auctionmanager_CollateralAuctionDealt <- NULL
     }
@@ -597,7 +597,99 @@ extract_events <- function(core_data, params) {
 }
 
 
+#' Get tokens from the Subscan api
+#' https://docs.api.subscan.io
+#'
+#' @name get_subscan_token
+#' @title get_subscan_token
+#' @encoding UTF-8
+#' @concept Get tokens from the Subscan api
+#' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
+#'
+#' @return list
+#'
+#' @examples
+#' get_subscan_token()
+#' get_subscan_token(network = 'Acala')
+#'
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+get_subscan_token <- function(network = 'Karura') {
 
+  api_host <- endpoints[network_name == network, api_host]
+  api_call <- '/api/scan/token'
+  baseurl <- paste0('https://', api_host, api_call)
+  r <- POST(baseurl,
+            add_headers(api_header, 'Content-Type=application/json'))
+  stop_for_status(r)
+
+  content(r, as="text", encoding="UTF-8") %>%
+    fromJSON(flatten=TRUE)
+}
+
+
+#' Get accounts from the Subscan api
+#' https://docs.api.subscan.io
+#'
+#' @name get_subscan_accounts
+#' @title get_subscan_accounts
+#' @encoding UTF-8
+#' @concept Get accounts from the Subscan api
+#' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
+#'
+#' @return list
+#'
+#' @examples
+#' get_subscan_accounts()
+#' get_subscan_accounts(network = 'Acala')
+#'
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+get_subscan_accounts <- function(network = 'Karura', start_page = 1) {
+
+  # nobs = 100; network = 'Polkadot'; row = 1; page = 1; start_page = 1
+  api_host <- endpoints[network_name == network, api_host]
+  api_call <- '/api/scan/accounts'
+  baseurl <- paste0('https://', api_host, api_call)
+
+  # each `page` pulls in 100 rows, so calculate how many pages you need to pull
+  last_page <- ceiling(max(1, (nobs / 100))) + (start_page - 1)
+
+  page_list <-list()
+  params_list <-list()
+  for (page in start_page:last_page) {
+    if (page %% 2 == 0) Sys.sleep(2)
+
+    body <- ' {"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"order": "desc","order_field": "balance"}'
+
+    r <- POST(baseurl, body = body,
+              add_headers(api_header, 'Content-Type: application/json'))
+    stop_for_status(r)
+    tmp <- content(r, as="text", encoding="UTF-8") %>%
+      fromJSON(flatten=TRUE)
+
+
+    core_data <- tmp$data$events %>%
+      as.data.table
+    params <- core_data$params
+
+    if (nrow(core_data) == 0) {
+      page <- last_page
+    } else {
+      core_data <- core_data[, params := NULL]
+
+      print(nrow(core_data) %+% " rows for page " %+% page %+% "/" %+% last_page %+% " " %+% tmp$message %+% " at " %+% Sys.time())
+      page_list[[page]] <- core_data
+      params_list[[page]] <- params
+
+    }
+
+
+
+  }
+  core_data <- rbindlist(page_list)
+  params <- do.call("c", params_list)
+}
 
 #' Get network metadata from the Subscan api
 #' https://docs.api.subscan.io
@@ -727,13 +819,13 @@ get_subscan_price_history <- function(network = 'Karura', start = '2021-11-01', 
 
 }
 
-#' Get price for a specific block time from the Subscan api
+#' Get list of currencies that support price query and conversion
 #' https://docs.api.subscan.io
 #'
 #' @name get_subscan_price
 #' @title get_subscan_price
 #' @encoding UTF-8
-#' @concept Get price for a specific block time from the Subscan api
+#' @concept Get list of currencies that support price query and conversion
 #' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
 #' @param time integer block time or unix time.
 #'
