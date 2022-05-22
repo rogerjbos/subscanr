@@ -34,28 +34,65 @@ myPath <- function(path) {
 fixToken <- function(x) {
   x <- gsub('fa://0', 'RMRK', x)
   x <- gsub('ForeignAsset://0', 'RMRK', x)
+
   x <- gsub('fa://1', 'ARIS', x)
   x <- gsub('ForeignAsset://1', 'ARIS', x)
+
   x <- gsub('fa://2', 'QTZ', x)
   x <- gsub('ForeignAsset://2', 'QTZ', x)
+
   x <- gsub('fa://3', 'MOVRZ', x)
   x <- gsub('ForeignAsset://3', 'MOVR', x)
+
   x <- gsub('fa://4', 'HKO', x)
   x <- gsub('ForeignAsset://4', 'HKO', x)
+
   x <- gsub('fa://5', 'CSM', x)
   x <- gsub('ForeignAsset://5', 'CSM', x)
+
+  x <- gsub('fa://6', 'KICO', x)
+  x <- gsub('ForeignAsset://6', 'KICO', x)
+
+  x <- gsub('fa://7', 'USDT', x)
+  x <- gsub('ForeignAsset://7', 'USDT', x)
+
+  x <- gsub('fa://8', 'TEER', x)
+  x <- gsub('ForeignAsset://8', 'TEER', x)
+
+  x <- gsub('fa://9', 'NEER', x)
+  x <- gsub('ForeignAsset://9', 'NEER', x)
+
+  x <- gsub('fa://10', 'KMA', x)
+  x <- gsub('ForeignAsset://10', 'KMA', x)
+
+  x <- gsub('fa://11', 'BSX', x)
+  x <- gsub('ForeignAsset://11', 'BSX', x)
+
+  x <- gsub('fa://12', 'AIR', x)
+  x <- gsub('ForeignAsset://12', 'AIR', x)
+
+  x <- gsub('fa://13', 'CRAB', x)
+  x <- gsub('ForeignAsset://13', 'CRAB', x)
+
+  x <- gsub('fa://14', 'GENS', x)
+  x <- gsub('ForeignAsset://14', 'GENS', x)
+
+  x <- gsub('fa://15', 'EQD', x)
+  x <- gsub('ForeignAsset://15', 'EQD', x)
+
   x <- gsub('lc://13', 'LCDOT', x)
   x <- gsub('LiquidCrowdloan://13', 'LCDOT', x)
+
   x <- gsub('sa://0', 'taiKSM', x)
   x <- gsub('StableAssetPoolToken://0', 'taiKSM', x)
+
   x <- gsub('KUSD', 'AUSD', x)
   x
 }
 
+
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-#'
-#'
 tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("ACA", "Acala", 12),
                               c("AIR","Altair", 18),
@@ -68,6 +105,7 @@ tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("CSM","Crust Storage Market", 12),
                               c("taiKSM","Taiga KSM", 12),
                               c("DOT","Polkadot", 10),
+                              c("DOT (on Homa)","Polkadot", 10),
                               c("EQD","Equilibrium USD", 9),
                               c("GENS","Genshiro Native Token", 9),
                               c("HKO","Heiko", 12),
@@ -77,6 +115,7 @@ tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("KINT","Kintsugi Native Token", 12),
                               c("KMA","Calamri", 12),
                               c("KSM","Kusama", 12),
+                              c("KSM (on Homa)","Kusama", 12),
                               c("KUSD","Karura Dollar", 12),
                               c("LCDOT","Liquid Crowdloan DOT", 10),
                               c("LDOT","Liquid DOT", 10),
@@ -298,55 +337,9 @@ getLoansDailyPositions_acala_loan <- function(network, window) {
                depositChangedUSD debitChangedUSD debitExchangeRate timestamp txCount"
   res <- get_graph(endpoint, method, edges, window)
 
-    # endpoint <-loan_endpoint
-  method <- 'dailyPositions'; maxn <- 1000
-
-  cli <- GraphqlClient$new(url = endpoint)
-  mindate <- today(tzone = 'UTC') - window
-
-  cursor <- ''
-  resList <- list()
-  for (i in 1:maxn) {
-    if (cursor == '') {
-      cursorStr <- 'first:100'
-    } else {
-      cursorStr <- 'first:100 after:"' %+% cursor %+% '"'
-    }
-    qry <- Query$new()
-    qry$query(method, '
-      {
-        query {
-          ' %+% method %+% ' (filter: {timestamp: {greaterThanOrEqualTo: "' %+% mindate %+% '"}} ' %+% cursorStr %+% ') {
-            totalCount
-            edges {
-              node {
-               id owner {id} collateral {id} depositAmount debitAmount depositVolumeUSD debitVolumeUSD
-               depositChangedUSD debitChangedUSD debitExchangeRate timestamp txCount
-              }
-              cursor
-            }
-            pageInfo {
-              endCursor
-              hasNextPage
-            }
-          }
-        }
-      }')
-    result <- cli$exec(qry$queries[[method]])  %>%
-      fromJSON(flatten=TRUE)
-    cursor <- result$data$query[[method]]$pageInfo$endCursor
-    res <- as.data.table(result$data$query[[method]]$edges)
-    res[, cursor := NULL]
-
-    print(i %+% " " %+% nrow(res))
-    resList[[i]] <- res
-    if (result$data$query[[method]]$pageInfo$hasNextPage == FALSE) break
-  }
-  res <- rbindlist(resList) %>%
-    setnames(names(res), gsub("node.", "", names(res)))
   res[, Date := as.Date(timestamp)]
   res[, collateral.id := fixToken(collateral.id)]
-  res <- merge(res, tokens, by.x='collateral.id', by.y='Token')
+  res <- merge(res, subscanr::tokens, by.x='collateral.id', by.y='Token', allow.cartesian=TRUE)
 
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
   res[, depositAmount := as.numeric(depositAmount) / adj]
@@ -554,11 +547,13 @@ getAccountBalance_moonbeam_token <- function(network, window = 1, filter = '', e
 
 }
 
-# KSM on shiden: 340,282,366,920,938,463,463,374,607,431,768,211,455
-
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
 getAccountBalance_acala_token <- function(network, window, filter = '', endpage = 2000) {
+
+  # query {\n        accountBalances (filter: {tokenId: {in: [\"DOT\",\"LDOT\"]}, total: {greaterThan: \"0\"}}  first:100) {\n          totalCount\n          edges {\n            node { accountId tokenId total}\n            cursor\n          }\n          pageInfo {\n            endCursor\n            hasNextPage\n          }\n        }\n      }\n    }"
+
+  # network="acala"; window = 1; filter = 'filter: {tokenId: {in: ["DOT","LDOT"]}, total: {greaterThan: "0"}} '; endpage = 2e9
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-tokens"
@@ -573,7 +568,7 @@ getAccountBalance_acala_token <- function(network, window, filter = '', endpage 
   res <- get_graph(endpoint, method, edges, window, filter, endpage)
   # unique(res$tokenId)
 
-  res[, tokenId := fixToken(tokenId)]
+  res[, tokenId := subscanr::fixToken(tokenId)]
   res <- merge(res, tokens, by.x='tokenId', by.y='Token')
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
   res[, total := as.numeric(total) / adj]
