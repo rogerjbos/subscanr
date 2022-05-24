@@ -88,6 +88,8 @@ endpoint_list <- c("Polkadot","polkadot.api.subscan.io",
                    "Westend","westend.api.subscan.io")
 endpoints <- as.data.table(matrix(endpoint_list, ncol = 2, byrow = TRUE))
 setnames(endpoints, c("network_name","api_host"))
+#' @export
+get_endpoint <- function(x) endpoint_list[match(x, endpoint_list) + 1]
 
 
 #' Get events from the Polkadot blockchain from the Subscan api
@@ -116,7 +118,7 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, mo
   # nobs = 500; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
   # nobs = 5000; network = 'Karura'; module = 'auctionmanager'; call = ''; start_page = 1; extract = TRUE
 
-  api_host <- endpoints[network_name == network, api_host]
+  api_host <- get_endpoint(network)
   # if (v2 == TRUE) {
   #   api_call <- '/api/v2/scan/events'
   #   fname <- network %+% "_events_v2.csv"
@@ -616,7 +618,7 @@ extract_events <- function(core_data, params) {
 #' @export
 get_subscan_token <- function(network = 'Karura') {
 
-  api_host <- endpoints[network_name == network, api_host]
+  api_host <- get_endpoint(network)
   api_call <- '/api/scan/token'
   baseurl <- paste0('https://', api_host, api_call)
   r <- POST(baseurl,
@@ -645,10 +647,10 @@ get_subscan_token <- function(network = 'Karura') {
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_subscan_accounts <- function(network = 'Karura', start_page = 1) {
+get_subscan_accounts <- function(network = 'Karura', nobs = 200000, start_page = 1) {
 
-  # nobs = 100; network = 'Polkadot'; row = 1; page = 1; start_page = 1
-  api_host <- endpoints[network_name == network, api_host]
+  # nobs = 300; network = 'Acala'; row = 1; page = 1; start_page = 1
+  api_host <- get_endpoint(network)
   api_call <- '/api/scan/accounts'
   baseurl <- paste0('https://', api_host, api_call)
 
@@ -668,27 +670,17 @@ get_subscan_accounts <- function(network = 'Karura', start_page = 1) {
     tmp <- content(r, as="text", encoding="UTF-8") %>%
       fromJSON(flatten=TRUE)
 
-
-    core_data <- tmp$data$events %>%
+    core_data <- tmp$data %>%
       as.data.table
-    params <- core_data$params
-
     if (nrow(core_data) == 0) {
       page <- last_page
     } else {
-      core_data <- core_data[, params := NULL]
-
       print(nrow(core_data) %+% " rows for page " %+% page %+% "/" %+% last_page %+% " " %+% tmp$message %+% " at " %+% Sys.time())
       page_list[[page]] <- core_data
-      params_list[[page]] <- params
-
+      fwrite(core_data, network %+% "_accounts2.csv", append = TRUE)
     }
-
-
-
   }
-  core_data <- rbindlist(page_list)
-  params <- do.call("c", params_list)
+  core_data <- rbindlist(page_list, use.names=TRUE, fill = TRUE)
 }
 
 #' Get network metadata from the Subscan api
@@ -740,7 +732,7 @@ get_subscan_metadata <- function(network = 'Karura') {
 #' @export
 get_subscan_extrinsic <- function(network = 'Karura', extrinsic = '398539-2') {
 
-  api_host <- endpoints[network_name == network, api_host]
+  api_host <- get_endpoint(network)
   api_call <- '/api/scan/extrinsic'
   baseurl <- paste0('https://', api_host, api_call)
   r <- POST(baseurl,
@@ -772,7 +764,7 @@ get_subscan_extrinsic <- function(network = 'Karura', extrinsic = '398539-2') {
 #' @export
 get_subscan_price <- function(network = 'Polkadot', time = 957105) {
 
-  api_host <- endpoints[network_name == network, api_host]
+  api_host <- get_endpoint(network)
   api_call <- '/api/open/price'
   baseurl <- paste0('https://', api_host, api_call)
   r <- POST(baseurl,
@@ -806,7 +798,7 @@ get_subscan_price <- function(network = 'Polkadot', time = 957105) {
 get_subscan_price_history <- function(network = 'Karura', start = '2021-11-01', end = '2021-11-02') {
 
   # network= "Polkadot"
-  api_host <- endpoints[network_name == network, api_host]
+  api_host <- get_endpoint(network)
   api_call <- '/api/scan/price/history'
   baseurl <- paste0('https://', api_host, api_call)
   r <- POST(baseurl,
@@ -839,7 +831,7 @@ get_subscan_price_history <- function(network = 'Karura', start = '2021-11-01', 
 get_subscan_currencies <- function(network = 'Polkadot') {
 
   # network="Polkadot"
-  api_host <- endpoints[network_name == network, api_host]
+  api_host <- get_endpoint(network)
   api_call <- '/api/open/currencies'
   baseurl <- paste0('https://', api_host, api_call)
   r <- POST(baseurl,
@@ -872,7 +864,7 @@ get_subscan_currencies <- function(network = 'Polkadot') {
 get_subscan_price_converter <- function(network = 'Karuka', time = 957105, value = 1000, from = 'USD', quote = 'DOT') {
 
   # network = "Polkadot"
-  api_host <- endpoints[network_name == network, api_host]
+  api_host <- get_endpoint(network)
   api_call <- '/api/open/price_converter'
   baseurl <- paste0('https://', api_host, api_call)
   r <- POST(baseurl,

@@ -605,3 +605,23 @@ getPositions_acala_loan <- function(network, window, filter, endpage = 2000) {
 
 }
 
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getAccounts_acala <- function(network, window, filter = '', endpage = 2000) {
+
+  # network="acala"; window = 1; filter = ''; endpage = 2
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-subql"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-subql"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+
+  method <- "accounts"
+  edges <- "id txCount createAtBlockId"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+  res
+
+}
