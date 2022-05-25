@@ -625,3 +625,93 @@ getAccounts_acala <- function(network, window, filter = '', endpage = 2000) {
   res
 
 }
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getPoolStats_acala <- function(network, window = 1) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+
+  method <- "pools"
+  edges <- "id,
+            token0 {decimal, name}
+            token1 {decimal, name}
+            token0Amount
+            token1Amount
+            tvlUSD
+            dayData(orderBy:DATE_DESC,first:7) {
+                nodes {
+                    date
+                    tvlUSD
+                    volumeUSD
+                }
+            }"
+  res <- get_graph(endpoint, method, edges, window=1, filter = '')
+
+  # Replace foreign assets
+  res[, token0.name := fixToken(token0.name)]
+  res[, token1.name := fixToken(token1.name)]
+
+  d24 <- list()
+  d7 <- list()
+  for (i in 1:nrow(res)) {
+    d24[[i]] <- as.numeric(res$dayData.[[i]]$volumeUSD[1]) / 1e18
+    d7[[i]] <- sum(as.numeric(res$dayData.[[i]]$volumeUSD), na.rm = TRUE) / 1e18
+  }
+  res[, volumeUSD_24H := d24]
+  res[, volumeUSD_7D := d7]
+  res[, dayData. := NULL]
+  res[token0Amount > 0 | token1Amount > 0]
+
+}
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getPoolStats_acala_dex <- function(network, window = 1) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-dex"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+
+  method <- "pools"
+  edges <- "id
+            token0 {decimals, name}
+            token1 {decimals, name}
+            token0Amount
+            token1Amount
+            totalTVL
+            dayData(orderBy:TIMESTAMP_DESC,first:7) {
+                nodes {
+                    timestamp
+                    totalTVL
+                    tradeVolumeUSD
+                }
+              }"
+  res <- get_graph(endpoint, method, edges, window=1, filter = '')
+
+  # Replace foreign assets
+  res[, token0.name := fixToken(token0.name)]
+  res[, token1.name := fixToken(token1.name)]
+
+  d24 <- list()
+  d7 <- list()
+  for (i in 1:nrow(res)) {
+    d24[[i]] <- as.numeric(res$dayData.[[i]]$volumeUSD[1]) / 1e18
+    d7[[i]] <- sum(as.numeric(res$dayData.[[i]]$volumeUSD), na.rm = TRUE) / 1e18
+  }
+  res[, volumeUSD_24H := d24]
+  res[, volumeUSD_7D := d7]
+  res[, dayData. := NULL]
+  res
+
+}
