@@ -86,6 +86,13 @@ fixToken <- function(x) {
   x <- gsub('sa://0', 'taiKSM', x)
   x <- gsub('StableAssetPoolToken://0', 'taiKSM', x)
 
+  x <- gsub('fa%3A%2F%2F2', 'QTZ', x)
+  x <- gsub('fa%3A%2F%2F0', 'RMRK', x)
+  x <- gsub('fa%3A%2F%2F1', 'ARIS', x)
+  x <- gsub('fa%3A%2F%2F5', 'CSM', x)
+  x <- gsub('sa%3A%2F%2F0', 'taiKSM', x)
+  x <- gsub('lc%3A%2F%2F13', 'LCDOT', x)
+
   x <- gsub('KUSD', 'AUSD', x)
   x
 }
@@ -657,6 +664,7 @@ getPoolStats_acala <- function(network, window = 1) {
   # Replace foreign assets
   res[, token0.name := fixToken(token0.name)]
   res[, token1.name := fixToken(token1.name)]
+  res[, id := fixToken(id)]
 
   d24 <- list()
   d7 <- list()
@@ -667,6 +675,7 @@ getPoolStats_acala <- function(network, window = 1) {
   res[, volumeUSD_24H := d24]
   res[, volumeUSD_7D := d7]
   res[, dayData. := NULL]
+  res[, tvlUSD := as.numeric(tvlUSD) / 1e18]
   res[token0Amount > 0 | token1Amount > 0]
 
 }
@@ -694,7 +703,7 @@ getPoolStats_acala_dex <- function(network, window = 1) {
                 nodes {
                     timestamp
                     totalTVL
-                    tradeVolumeUSD
+                    dailyTradeVolumeUSD
                 }
               }"
   res <- get_graph(endpoint, method, edges, window=1, filter = '')
@@ -702,15 +711,17 @@ getPoolStats_acala_dex <- function(network, window = 1) {
   # Replace foreign assets
   res[, token0.name := fixToken(token0.name)]
   res[, token1.name := fixToken(token1.name)]
+  res[, id := fixToken(id)]
 
   d24 <- list()
   d7 <- list()
   for (i in 1:nrow(res)) {
-    d24[[i]] <- as.numeric(res$dayData.[[i]]$volumeUSD[1]) / 1e18
-    d7[[i]] <- sum(as.numeric(res$dayData.[[i]]$volumeUSD), na.rm = TRUE) / 1e18
+    d24[[i]] <- as.numeric(res$dayData.[[i]]$dailyTradeVolumeUSD[1]) / 1e18
+    d7[[i]] <- sum(as.numeric(res$dayData.[[i]]$dailyTradeVolumeUSD), na.rm = TRUE) / 1e18
   }
   res[, volumeUSD_24H := d24]
   res[, volumeUSD_7D := d7]
+  res[, totalTVL := as.numeric(totalTVL) / 1e18]
   res[, dayData. := NULL]
   res
 
