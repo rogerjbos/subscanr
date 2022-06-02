@@ -726,3 +726,99 @@ getPoolStats_acala_dex <- function(network, window = 1) {
   res
 
 }
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getPoolStats_acala_dex_testing <- function(network, window = 1) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-dex"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+
+  method <- "pools"
+  edges <- "id
+            token0 {decimals, name}
+            token1 {decimals, name}
+            token0Amount
+            token1Amount
+            token0TVL
+            token1TVL
+            totalTVL"
+  res <- get_graph(endpoint, method, edges, window=1, filter = '')
+  # res <- get_graph(endpoint, method, edges, window=1, filter = 'filter: {token0Id: {equalTo: "AUSD"}, token1Id: {equalTo: "LDOT"}}')
+
+  # Replace foreign assets
+  res[, token0.name := fixToken(token0.name)]
+  res[, token1.name := fixToken(token1.name)]
+  res[, id := fixToken(id)]
+
+  res[, totalTVL := as.numeric(totalTVL) / 1e18]
+  res[, token0TVL := as.numeric(token0TVL) / 1e18]
+  res[, token1TVL := as.numeric(token1TVL) / 1e18]
+  res[, testTVL := token0TVL + token1TVL]
+  res
+
+}
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getTokenDailyData_acala_dex <- function(network, window = 1) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-dex"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+
+  method <- "tokenDailyData"
+  edges <- "tokenId amount tvl dailyTradeVolumeUSD dailyTxCount price timestamp"
+  res <- get_graph(endpoint, method, edges, window=1, filter = '')
+
+  # Replace foreign assets
+  res[, tokenId := fixToken(tokenId)]
+
+  res[, tvl := as.numeric(tvl) / 1e18]
+  res[, dailyTradeVolumeUSD := as.numeric(dailyTradeVolumeUSD) / 1e18]
+  res[, price := as.numeric(price) / 1e18]
+  res
+
+}
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getDailyPool_acala_dex <- function(network, window = 1) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-dex"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+
+  method <- "dailyPools"
+  edges <- "poolId timestamp token0Id token1Id token0Amount token1Amount token0Price token1Price feeRateUSD token0TVL token1TVL totalTVL txCount"
+  res <- get_graph(endpoint, method, edges, window=1, filter = '')
+
+  # Replace foreign assets
+  res[, token0Id := fixToken(token0Id)]
+  res[, token1Id := fixToken(token1Id)]
+  res[, poolId := fixToken(poolId)]
+
+  res[, feeRateUSD := as.numeric(feeRateUSD) / 1e18]
+  res[, totalTVL := as.numeric(totalTVL) / 1e18]
+  res[, token0Price := as.numeric(token0Price) / 1e18]
+  res[, token1Price := as.numeric(token1Price) / 1e18]
+  res[, token0TVL := as.numeric(token0TVL) / 1e18]
+  res[, token1TVL := as.numeric(token1TVL) / 1e18]
+  res[, totalTVL := as.numeric(totalTVL) / 1e18]
+  res
+
+}
+
