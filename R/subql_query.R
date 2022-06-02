@@ -563,9 +563,9 @@ getAccountBalance_acala_token <- function(network, window, filter = '', endpage 
   # network="acala"; window = 1; filter = 'filter: {tokenId: {in: ["DOT","LDOT"]}, total: {greaterThan: "0"}} '; endpage = 2e9
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-tokens"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-tokens__QWNhb"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-tokens"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-tokens__QWNhb"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
@@ -812,7 +812,6 @@ getDailyPool_acala_dex <- function(network, window = 1) {
   res[, poolId := fixToken(poolId)]
 
   res[, feeRateUSD := as.numeric(feeRateUSD) / 1e18]
-  res[, totalTVL := as.numeric(totalTVL) / 1e18]
   res[, token0Price := as.numeric(token0Price) / 1e18]
   res[, token1Price := as.numeric(token1Price) / 1e18]
   res[, token0TVL := as.numeric(token0TVL) / 1e18]
