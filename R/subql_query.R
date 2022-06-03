@@ -821,3 +821,29 @@ getDailyPool_acala_dex <- function(network, window = 1) {
 
 }
 
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getPoolDayData_acala <- function(network, window = 1) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+
+  method <- "poolDayData"
+  edges <- "poolId date token0Id token1Id token0Amount token1Amount tvlUSD"
+  res <- get_graph(endpoint, method, edges, window=1, filter = '')
+
+  # Replace foreign assets
+  res[, token0Id := fixToken(token0Id)]
+  res[, token1Id := fixToken(token1Id)]
+  res[, poolId := fixToken(poolId)]
+
+  res[, tvlUSD := as.numeric(tvlUSD) / 1e18]
+  res
+
+}
+
