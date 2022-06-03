@@ -854,9 +854,9 @@ getPoolDayData_acala <- function(network, window = 1) {
   res[, token1Id := fixToken(token1Id)]
   res[, poolId := fixToken(poolId)]
 
-  res <- merge(res, tokens, by.x='token0Id', by.y='Token')
+  res <- merge(res, tokens, by.x='token0Id', by.y='Token', allow.cartesian = TRUE)
   res[, adj0 := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
-  res <- merge(res, tokens, by.x='token1Id', by.y='Token')
+  res <- merge(res, tokens, by.x='token1Id', by.y='Token', allow.cartesian = TRUE)
   res[, adj1 := as.numeric(substr(as.character(1e20),1, as.numeric(decimals.y) + 1))]
   res[, token0Amount := as.numeric(token0Amount) / adj0]
   res[, token1Amount := as.numeric(token1Amount) / adj1]
