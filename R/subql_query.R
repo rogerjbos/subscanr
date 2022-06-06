@@ -846,7 +846,7 @@ getPoolDayData_acala <- function(network, window = 1) {
   }
 
   method <- "poolDayData"
-  edges <- "poolId date token0Id token1Id token0Amount token1Amount tvlUSD"
+  edges <- "poolId date token0Id token1Id token0Amount token1Amount tvlUSD token0Close"
   res <- get_graph(endpoint, method, edges, window=1, filter = '')
 
   # Replace foreign assets
@@ -862,6 +862,7 @@ getPoolDayData_acala <- function(network, window = 1) {
   res[, token1Amount := as.numeric(token1Amount) / adj1]
 
   res[, tvlUSD := as.numeric(tvlUSD) / 1e18]
+  res[, token0Close := as.numeric(token0Close) / 1e18]
   res[, decimals.x := NULL]
   res[, decimals.y := NULL]
   res[, Name.x := NULL]
