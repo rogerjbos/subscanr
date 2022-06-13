@@ -112,11 +112,11 @@ get_endpoint <- function(x) endpoint_list[match(x, endpoint_list) + 1]
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, module = '', call = '', block = NULL, extract = TRUE) {
+get_subscan_events <- function(nobs = 500, network = 'Acala', start_page = 1, module = '', call = '', block = NULL, extract = TRUE) {
 
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
   # nobs = 500; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
-  # nobs = 5000; network = 'Karura'; module = 'auctionmanager'; call = ''; start_page = 1; extract = TRUE
+  # nobs = 100; network = 'Acala'; module = 'treasury'; call = 'Deposit'; start_page = 1; extract = TRUE
 
   api_host <- get_endpoint(network)
   # if (v2 == TRUE) {
@@ -143,10 +143,16 @@ get_subscan_events <- function(nobs = 100, network = 'Acala', start_page = 1, mo
     # }
     r <- POST(baseurl, body = body,
               add_headers(api_header, 'Content-Type: application/json'))
-    stop_for_status(r)
+    while(r$status_code != 200) {
+      print("Error " %+% r$status_code)
+      Sys.sleep(3)
+      r <- POST(baseurl, body = body,
+                add_headers(api_header, 'Content-Type: application/json'))
+    }
+
+    # stop_for_status(r)
     tmp <- content(r, as="text", encoding="UTF-8") %>%
       fromJSON(flatten=TRUE)
-
     core_data <- tmp$data$events %>%
       as.data.table
     params <- core_data$params
@@ -622,6 +628,38 @@ get_subscan_token <- function(network = 'Karura') {
   api_call <- '/api/scan/token'
   baseurl <- paste0('https://', api_host, api_call)
   r <- POST(baseurl,
+            add_headers(api_header, 'Content-Type=application/json'))
+  stop_for_status(r)
+
+  content(r, as="text", encoding="UTF-8") %>%
+    fromJSON(flatten=TRUE)
+}
+
+
+#' Get tokens from the Subscan api
+#' https://docs.api.subscan.io
+#'
+#' @name get_subscan_token
+#' @title get_subscan_token
+#' @encoding UTF-8
+#' @concept Get tokens from the Subscan api
+#' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
+#'
+#' @return list
+#'
+#' @examples
+#' get_subscan_token()
+#' get_subscan_token(network = 'Acala')
+#'
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+get_subscan_account_tokens <- function(network = 'Acala', addr) {
+
+  api_host <- get_endpoint(network)
+  api_call <- '/api/scan/account/tokens'
+  baseurl <- paste0('https://', api_host, api_call)
+  body <- ' {"address": "' %+% addr %+% '"}'
+  r <- POST(baseurl, body = body,
             add_headers(api_header, 'Content-Type=application/json'))
   stop_for_status(r)
 
