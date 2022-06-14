@@ -6,7 +6,7 @@
 \title{get_subscan_events}
 \usage{
 get_subscan_events(
-  nobs = 100,
+  nobs = 500,
   network = "Acala",
   start_page = 1,
   module = "",

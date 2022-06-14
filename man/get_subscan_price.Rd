@@ -24,7 +24,7 @@ list
 Get price for a specific block time from the Subscan api
 https://docs.api.subscan.io
 
-Get price for a specific block time from the Subscan api
+Get list of currencies that support price query and conversion
 https://docs.api.subscan.io
 }
 \examples{
@@ -35,7 +35,6 @@ get_subscan_currencies('Polkadot')
 }
 \author{
 Roger J. Bos, \email{roger.bos@gmail.com}
-
-Roger J. Bos, \email{roger.bos@gmail.com}
 }
+\concept{Get list of currencies that support price query and conversion}
 \concept{Get price for a specific block time from the Subscan api}

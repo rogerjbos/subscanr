@@ -556,22 +556,19 @@ getAccountBalance_moonbeam_token <- function(network, window = 1, filter = '', e
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getAccountBalance_acala_token <- function(network, window, filter = '', endpage = 2000) {
-
-  # query {\n        accountBalances (filter: {tokenId: {in: [\"DOT\",\"LDOT\"]}, total: {greaterThan: \"0\"}}  first:100) {\n          totalCount\n          edges {\n            node { accountId tokenId total}\n            cursor\n          }\n          pageInfo {\n            endCursor\n            hasNextPage\n          }\n        }\n      }\n    }"
-
-  # network="acala"; window = 1; filter = 'filter: {tokenId: {in: ["DOT","LDOT"]}, total: {greaterThan: "0"}} '; endpage = 2e9
+getDailyAccountBalance_acala_token <- function(network, window, filter = '', endpage = 2000) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-tokens__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-tokens-ipfs"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-tokens__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-tokens-ipfs"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
 
-  method <- "accountBalances"
-  edges <- "accountId tokenId total"
+  method <- "dailyAccountBalances"
+  edges <- "accountId tokenId timestamp total free reserved frozen updateAtBlock"
+  # filter <- ' filter: {accountId: {equalTo: "23M5ttkmR6Kco5p3LFGKMpMv4zvLkKdUQWW1wGGoV8zDX3am"}}'
   res <- get_graph(endpoint, method, edges, window, filter, endpage)
   # unique(res$tokenId)
 
@@ -579,6 +576,39 @@ getAccountBalance_acala_token <- function(network, window, filter = '', endpage 
   res <- merge(res, tokens, by.x='tokenId', by.y='Token')
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
   res[, total := as.numeric(total) / adj]
+  res[, free := as.numeric(free) / adj]
+  res[, reserved := as.numeric(reserved) / adj]
+  res[, frozen := as.numeric(frozen) / adj]
+  res[, Name := NULL]
+  res
+
+}
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getAccountBalance_acala_token <- function(network, window, filter = '', endpage = 2000) {
+
+  # query {\n        accountBalances (filter: {tokenId: {in: [\"DOT\",\"LDOT\"]}, total: {greaterThan: \"0\"}}  first:100) {\n          totalCount\n          edges {\n            node { accountId tokenId total}\n            cursor\n          }\n          pageInfo {\n            endCursor\n            hasNextPage\n          }\n        }\n      }\n    }"
+  # network="acala"; window = 1; filter = 'filter: {tokenId: {in: ["DOT","LDOT"]}, total: {greaterThan: "0"}} '; endpage = 2e9
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-tokens-ipfs"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-tokens-ipfs"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+
+  method <- "accountBalances"
+  edges <- "accountId tokenId total free reserved frozen"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+
+  res[, tokenId := subscanr::fixToken(tokenId)]
+  res <- merge(res, tokens, by.x='tokenId', by.y='Token')
+  res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
+  res[, total := as.numeric(total) / adj]
+  res[, free := as.numeric(free) / adj]
+  res[, reserved := as.numeric(reserved) / adj]
+  res[, frozen := as.numeric(frozen) / adj]
   res[, Name := NULL]
   res
 

@@ -117,6 +117,7 @@ get_subscan_events <- function(nobs = 500, network = 'Acala', start_page = 1, mo
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
   # nobs = 500; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
   # nobs = 100; network = 'Acala'; module = 'treasury'; call = 'Deposit'; start_page = 1; extract = TRUE
+  # nobs = 100; network = 'Karura'; module = 'cdpengine'; call = 'LiquidateUnsafeCDP'; start_page = 1; extract = TRUE
 
   api_host <- get_endpoint(network)
   # if (v2 == TRUE) {
@@ -639,21 +640,20 @@ get_subscan_token <- function(network = 'Karura') {
 #' Get tokens from the Subscan api
 #' https://docs.api.subscan.io
 #'
-#' @name get_subscan_token
-#' @title get_subscan_token
+#' @name get_subscan_account_token
+#' @title get_subscan_account_token
 #' @encoding UTF-8
-#' @concept Get tokens from the Subscan api
+#' @concept Get tokens for a specific from the Subscan api
 #' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
 #'
 #' @return list
 #'
 #' @examples
-#' get_subscan_token()
-#' get_subscan_token(network = 'Acala')
+#' get_subscan_account_token(network = 'Acala', address = '23M5ttkmR6Kco5p3LFGKMpMv4zvLkKdUQWW1wGGoV8zDX3am')
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_subscan_account_tokens <- function(network = 'Acala', addr) {
+get_subscan_account_tokens <- function(network = 'KaruraA', addr) {
 
   api_host <- get_endpoint(network)
   api_call <- '/api/scan/account/tokens'
