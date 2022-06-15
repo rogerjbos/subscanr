@@ -110,7 +110,6 @@ tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("CASH","Compound CASH", 8),
                               c("CRAB","Crab Parachain Token", 18),
                               c("CSM","Crust Storage Market", 12),
-                              c("taiKSM","Taiga KSM", 12),
                               c("DOT","Polkadot", 10),
                               c("DOT (on Homa)","Polkadot", 10),
                               c("EQD","Equilibrium USD", 9),
@@ -299,9 +298,9 @@ getLiquidity_acala <- function(endpoint, window) {
 getLoansCollateralParams_acala_loan <- function(network) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans__QWNhb"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan__QWNhb"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
@@ -331,9 +330,9 @@ getLoansCollateralParams_acala_loan <- function(network) {
 getLoansDailyPositions_acala_loan <- function(network, window) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans__QWNhb"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan__QWNhb"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
@@ -366,9 +365,9 @@ getLoansDailyPositions_acala_loan <- function(network, window) {
 getLoansDailyCollateral_acala_loan <- function(network, window) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans__QWNhb"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan__QWNhb"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
@@ -496,9 +495,9 @@ getSwaps_acala <- function(network, window, block = NULL) {
 getLiquidateUnsafeCDP_acala_loan <- function(network, window) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans__QWNhb"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan__QWNhb"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
@@ -619,9 +618,9 @@ getAccountBalance_acala_token <- function(network, window, filter = '', endpage 
 getPositions_acala_loan <- function(network, window, filter, endpage = 2000) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans__QWNhb"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan__QWNhb"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
