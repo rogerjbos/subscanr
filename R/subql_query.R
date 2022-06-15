@@ -10,6 +10,8 @@
 #'   ifelse(a < b, a %+% ":" %+% b, b %+% ":" %+% a)
 #' }
 
+stagingStr <- "__QWNhb"
+
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
 myPath <- function(path) {
@@ -226,7 +228,7 @@ get_graph <- function(endpoint, method, edges, window, filter = "timestamp", end
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getDailyPools_acala_dex <- function(network, window) {
+getDailyPools_acala_dex <- function(network, window, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
@@ -235,6 +237,7 @@ getDailyPools_acala_dex <- function(network, window) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "dailyPools"
   edges <- "timestamp token0 {id} token1 {id} feeRateUSD dailyTradeVolumeUSD totalTVL txCount"
@@ -265,7 +268,7 @@ getDailyPools_acala_dex <- function(network, window) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getLiquidity_acala <- function(endpoint, window) {
+getLiquidity_acala <- function(endpoint, window, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala"
@@ -274,6 +277,7 @@ getLiquidity_acala <- function(endpoint, window) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "dexActions"
   edges <- "timestamp id nodeId accountId type token0Id token1Id token0Amount token1Amount volumeUSD"
@@ -295,15 +299,16 @@ getLiquidity_acala <- function(endpoint, window) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getLoansCollateralParams_acala_loan <- function(network) {
+getLoansCollateralParams_acala_loan <- function(network, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "collateralParams"
   filter <- ""
@@ -327,15 +332,16 @@ getLoansCollateralParams_acala_loan <- function(network) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getLoansDailyPositions_acala_loan <- function(network, window) {
+getLoansDailyPositions_acala_loan <- function(network, window, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "dailyPositions"
   filter <- "timestamp"
@@ -362,15 +368,17 @@ getLoansDailyPositions_acala_loan <- function(network, window) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getLoansDailyCollateral_acala_loan <- function(network, window) {
+getLoansDailyCollateral_acala_loan <- function(network, window, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
 
   method <- "dailyCollaterals"
   filter <- "timestamp"
@@ -398,7 +406,7 @@ getLoansDailyCollateral_acala_loan <- function(network, window) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getSwaps_acala_dex <- function(network, window, block = NULL) {
+getSwaps_acala_dex <- function(network, window, block = NULL, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
@@ -407,6 +415,7 @@ getSwaps_acala_dex <- function(network, window, block = NULL) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "swaps"
   edges <- "id address {id} pool {id}  token0 {id} token1 {id} token0InAmount token1OutAmount tradePath price0 price1
@@ -449,7 +458,7 @@ getSwaps_acala_dex <- function(network, window, block = NULL) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getSwaps_acala <- function(network, window, block = NULL) {
+getSwaps_acala <- function(network, window, block = NULL, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala"
@@ -458,6 +467,7 @@ getSwaps_acala <- function(network, window, block = NULL) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "dexActions"
   edges <- "timestamp id accountId token0Id token1Id  volumeUSD data"
@@ -492,15 +502,16 @@ getSwaps_acala <- function(network, window, block = NULL) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getLiquidateUnsafeCDP_acala_loan <- function(network, window) {
+getLiquidateUnsafeCDP_acala_loan <- function(network, window, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "liquidUnsaves"
   edges <- "id sender {id} owner {id} collateral {id} collateralAmount collateralVolumeUSD
@@ -555,7 +566,7 @@ getAccountBalance_moonbeam_token <- function(network, window = 1, filter = '', e
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getDailyAccountBalance_acala_token <- function(network, window, filter = '', endpage = 2000) {
+getDailyAccountBalance_acala_token <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-tokens-ipfs"
@@ -564,6 +575,7 @@ getDailyAccountBalance_acala_token <- function(network, window, filter = '', end
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "dailyAccountBalances"
   edges <- "accountId tokenId timestamp total free reserved frozen updateAtBlock"
@@ -585,7 +597,7 @@ getDailyAccountBalance_acala_token <- function(network, window, filter = '', end
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getAccountBalance_acala_token <- function(network, window, filter = '', endpage = 2000) {
+getAccountBalance_acala_token <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
 
   # query {\n        accountBalances (filter: {tokenId: {in: [\"DOT\",\"LDOT\"]}, total: {greaterThan: \"0\"}}  first:100) {\n          totalCount\n          edges {\n            node { accountId tokenId total}\n            cursor\n          }\n          pageInfo {\n            endCursor\n            hasNextPage\n          }\n        }\n      }\n    }"
   # network="acala"; window = 1; filter = 'filter: {tokenId: {in: ["DOT","LDOT"]}, total: {greaterThan: "0"}} '; endpage = 2e9
@@ -596,6 +608,7 @@ getAccountBalance_acala_token <- function(network, window, filter = '', endpage 
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "accountBalances"
   edges <- "accountId tokenId total free reserved frozen"
@@ -615,15 +628,16 @@ getAccountBalance_acala_token <- function(network, window, filter = '', endpage 
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getPositions_acala_loan <- function(network, window, filter, endpage = 2000) {
+getPositions_acala_loan <- function(network, window, filter, endpage = 2000, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
   } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan__QWNhb"
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   # filter <- 'filter: {collateralId: {in: ["ACA","DOT","LDOT","KSM","LKSM"]}} '; endpage <- 2
   method <- "positions"
@@ -643,7 +657,7 @@ getPositions_acala_loan <- function(network, window, filter, endpage = 2000) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getAccounts_acala <- function(network, window, filter = '', endpage = 2000) {
+getAccounts_acala <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
 
   # network="acala"; window = 1; filter = ''; endpage = 2
 
@@ -654,6 +668,7 @@ getAccounts_acala <- function(network, window, filter = '', endpage = 2000) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "accounts"
   edges <- "id txCount createAtBlockId"
@@ -664,7 +679,7 @@ getAccounts_acala <- function(network, window, filter = '', endpage = 2000) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getPoolStats_acala <- function(network, window = 1) {
+getPoolStats_acala <- function(network, window = 1, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala"
@@ -673,6 +688,7 @@ getPoolStats_acala <- function(network, window = 1) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "pools"
   edges <- "id,
@@ -711,7 +727,7 @@ getPoolStats_acala <- function(network, window = 1) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getPoolStats_acala_dex <- function(network, window = 1) {
+getPoolStats_acala_dex <- function(network, window = 1, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
@@ -720,6 +736,7 @@ getPoolStats_acala_dex <- function(network, window = 1) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "pools"
   edges <- "id
@@ -758,7 +775,7 @@ getPoolStats_acala_dex <- function(network, window = 1) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getPoolStats_acala_dex_testing <- function(network, window = 1) {
+getPoolStats_acala_dex_testing <- function(network, window = 1, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
@@ -767,6 +784,7 @@ getPoolStats_acala_dex_testing <- function(network, window = 1) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "pools"
   edges <- "id
@@ -795,7 +813,7 @@ getPoolStats_acala_dex_testing <- function(network, window = 1) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getTokenDailyData_acala_dex <- function(network, window = 1) {
+getTokenDailyData_acala_dex <- function(network, window = 1, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
@@ -804,6 +822,7 @@ getTokenDailyData_acala_dex <- function(network, window = 1) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "tokenDailyData"
   edges <- "tokenId amount tvl dailyTradeVolumeUSD dailyTxCount price timestamp"
@@ -821,7 +840,7 @@ getTokenDailyData_acala_dex <- function(network, window = 1) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getDailyPool_acala_dex <- function(network, window = 1) {
+getDailyPool_acala_dex <- function(network, window = 1, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
@@ -830,6 +849,7 @@ getDailyPool_acala_dex <- function(network, window = 1) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "dailyPools"
   edges <- "poolId timestamp token0Id token1Id token0Amount token1Amount token0Price token1Price feeRateUSD token0TVL token1TVL totalTVL txCount"
@@ -864,7 +884,7 @@ getDailyPool_acala_dex <- function(network, window = 1) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getPoolDayData_acala <- function(network, window = 1) {
+getPoolDayData_acala <- function(network, window = 1, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala"
@@ -873,6 +893,7 @@ getPoolDayData_acala <- function(network, window = 1) {
   } else {
     stop("Network not found; must be one of 'acala' or 'karura'")
   }
+  if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "poolDayData"
   edges <- "poolId date token0Id token1Id token0Amount token1Amount tvlUSD token0Close"
