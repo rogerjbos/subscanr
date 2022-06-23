@@ -131,7 +131,7 @@ tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("MOVR","Moonriver", 18),
                               c("NEER","Metaverse.Network Pioneer", 18),
                               c("PHA","Phala Native Token", 12),
-                              c("QTZ","Quartz", 12),
+                              c("QTZ","Quartz", 18),
                               c("RMRK","Remark", 10),
                               c("RENBTC","Ren Protocol BTC", 8),
                               c("TAI","Taiga", 12),
@@ -379,10 +379,9 @@ getLoansDailyCollateral_acala_loan <- function(network, window, staging = FALSE)
   }
   if (staging) endpoint <- endpoint %+% stagingStr
 
-
   method <- "dailyCollaterals"
   filter <- "timestamp"
-  edges <- "id collateral {id} depositAmount debitAmount depositVolumeUSD debitVolumeUSD
+  edges <- "collateral {id} depositAmount debitAmount depositVolumeUSD debitVolumeUSD
             depositChangedUSD debitChangedUSD debitExchangeRate timestamp txCount"
   res <- get_graph(endpoint, method, edges, window)
 
@@ -504,6 +503,7 @@ getSwaps_acala <- function(network, window, block = NULL, staging = FALSE) {
 #' @export
 getLiquidateUnsafeCDP_acala_loan <- function(network, window, staging = FALSE) {
 
+  # staging <- TRUE
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
   } else if (tolower(network) == 'karura') {
@@ -514,7 +514,7 @@ getLiquidateUnsafeCDP_acala_loan <- function(network, window, staging = FALSE) {
   if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "liquidUnsaves"
-  edges <- "id sender {id} owner {id} collateral {id} collateralAmount collateralVolumeUSD
+  edges <- "sender {id} owner {id} collateral {id} collateralAmount collateralVolumeUSD
             badDebitVolumeUSD liquidationStrategy price debitExchangeRate block {id} timestamp"
   res <- get_graph(endpoint, method, edges, window)
 
@@ -840,7 +840,7 @@ getTokenDailyData_acala_dex <- function(network, window = 1, staging = FALSE) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getDailyPool_acala_dex <- function(network, window = 1, staging = FALSE) {
+getDailyPool_acala_dex <- function(network, window = 1, filter = '', staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
@@ -853,7 +853,8 @@ getDailyPool_acala_dex <- function(network, window = 1, staging = FALSE) {
 
   method <- "dailyPools"
   edges <- "poolId timestamp token0Id token1Id token0Amount token1Amount token0Price token1Price feeRateUSD token0TVL token1TVL totalTVL txCount"
-  res <- get_graph(endpoint, method, edges, window=1, filter = '')
+  filter = ''
+  res <- get_graph(endpoint, method, edges, window=1, filter = filter)
 
   # Replace foreign assets
   res[, token0Id := fixToken(token0Id)]
