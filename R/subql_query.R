@@ -240,11 +240,11 @@ getDailyPools_acala_dex <- function(network, window, staging = FALSE) {
   if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "dailyPools"
-  edges <- "timestamp token0 {id} token1 {id} feeRateUSD dailyTradeVolumeUSD totalTVL txCount"
+  edges <- "timestamp token0 {id} token1 {id} feeRateUSD dailyTradeVolumeUSD totalTVL txCount updateAtBlock {id}"
   res <- get_graph(endpoint, method, edges, window)
 
-  res[, date := as.Date(timestamp)]
-  setorder(res, date)
+  res[, Date := as.Date(timestamp)]
+  setorder(res, Date)
   setnames(res,
            c("token0.id","token1.id","dailyTradeVolumeUSD","totalTVL","feeRateUSD"),
            c("token0Id", "token1Id", "volumeUSD", "tvlUSD", "feeUSD"))
