@@ -657,6 +657,32 @@ getPositions_acala_loan <- function(network, window, filter, endpage = 2000, sta
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
+getMint_acala_homa <- function(network, window, filter = '', endpage = 100, staging = FALSE) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-homa"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-homa"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "mints"
+  edges <- "address {id} type amountStaked amountMinted stakingCurrencyAmount liquidAmountReceived liquidAmountAddedToVoid block {id} extrinsic {id} timestamp"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+
+  setorder(res, timestamp)
+  # res[, cumsumMinted := cumsum(amountMinted)]
+  # res[, cumsumStaking := cumsum(stakingCurrencyAmount)]
+  # res[, ratio := cumsumMinted / cumsumStaking]
+
+  res
+
+}
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
 getAccounts_acala <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
 
   # network="acala"; window = 1; filter = ''; endpage = 2
