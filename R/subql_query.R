@@ -36,12 +36,18 @@ myPath <- function(path) {
 fixToken <- function(x) {
   x <- gsub('fa://0', 'RMRK', x)
   x <- gsub('ForeignAsset://0', 'RMRK', x)
+  x <- gsub('fa%3A%2F%2F0', 'RMRK', x)
+  x <- gsub("{'ForeignAsset': 0}", 'RMRK', x, perl = TRUE)
 
   x <- gsub('fa://1', 'ARIS', x)
   x <- gsub('ForeignAsset://1', 'ARIS', x)
+  x <- gsub('fa%3A%2F%2F1', 'ARIS', x)
+  x <- gsub("{'ForeignAsset': 1}", 'ARIS', x, perl = TRUE)
 
   x <- gsub('fa://2', 'QTZ', x)
   x <- gsub('ForeignAsset://2', 'QTZ', x)
+  x <- gsub('fa%3A%2F%2F2', 'QTZ', x)
+  x <- gsub("{'ForeignAsset': 2}", 'QTZ', x, perl = TRUE)
 
   x <- gsub('fa://3', 'MOVRZ', x)
   x <- gsub('ForeignAsset://3', 'MOVR', x)
@@ -51,6 +57,8 @@ fixToken <- function(x) {
 
   x <- gsub('fa://5', 'CSM', x)
   x <- gsub('ForeignAsset://5', 'CSM', x)
+  x <- gsub('fa%3A%2F%2F5', 'CSM', x)
+  x <- gsub("{'ForeignAsset': 5}", 'CSM', x, perl = TRUE)
 
   x <- gsub('fa://6', 'KICO', x)
   x <- gsub('ForeignAsset://6', 'KICO', x)
@@ -84,18 +92,28 @@ fixToken <- function(x) {
 
   x <- gsub('lc://13', 'LCDOT', x)
   x <- gsub('LiquidCrowdloan://13', 'LCDOT', x)
+  x <- gsub('lc%3A%2F%2F13', 'LCDOT', x)
 
   x <- gsub('sa://0', 'taiKSM', x)
   x <- gsub('StableAssetPoolToken://0', 'taiKSM', x)
-
-  x <- gsub('fa%3A%2F%2F2', 'QTZ', x)
-  x <- gsub('fa%3A%2F%2F0', 'RMRK', x)
-  x <- gsub('fa%3A%2F%2F1', 'ARIS', x)
-  x <- gsub('fa%3A%2F%2F5', 'CSM', x)
   x <- gsub('sa%3A%2F%2F0', 'taiKSM', x)
-  x <- gsub('lc%3A%2F%2F13', 'LCDOT', x)
+  x <- gsub("{'StableAssetPoolToken': 0}", 'taiKSM', x, perl = TRUE)
 
-  x <- gsub('KUSD', 'AUSD', x)
+  x <- gsub("{'Token': 'KAR'}", 'KAR', x, perl = TRUE)
+  x <- gsub("{'Token': 'KBTC'}", 'KBTC', x, perl = TRUE)
+  x <- gsub("{'Token': 'KINT'}", 'KINT', x, perl = TRUE)
+  x <- gsub("{'Token': 'KSM'}", 'KSM', x, perl = TRUE)
+  x <- gsub("{'Token': 'KUSD'}", 'KUSD', x, perl = TRUE)
+  x <- gsub("{'Token': 'LKSM'}", 'LKSM', x, perl = TRUE)
+  x <- gsub("{'Token': 'PHA'}", 'PHA', x, perl = TRUE)
+  x <- gsub("{'Token': 'TAI'}", 'TAI', x, perl = TRUE)
+
+  x <- gsub("{'LiquidCrowdloan': 13}", 'LCDOT', x, perl = TRUE)
+  x <- gsub("{'Token': 'ACA'}", 'ACA', x, perl = TRUE)
+  x <- gsub("{'Token': 'AUSD'}", 'AUSD', x, perl = TRUE)
+  x <- gsub("{'Token': 'DOT'}", 'DOT', x, perl = TRUE)
+  x <- gsub("{'Token': 'LDOT'}", 'LDOT', x, perl = TRUE)
+
   x
 }
 
