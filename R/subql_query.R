@@ -99,10 +99,12 @@ fixToken <- function(x) {
   x <- gsub('sa%3A%2F%2F0', 'taiKSM', x)
   x <- gsub("{'StableAssetPoolToken': 0}", 'taiKSM', x, perl = TRUE)
 
+  x <- gsub("{'Token': 'BNC'}", 'BNC', x, perl = TRUE)
   x <- gsub("{'Token': 'KAR'}", 'KAR', x, perl = TRUE)
   x <- gsub("{'Token': 'KBTC'}", 'KBTC', x, perl = TRUE)
   x <- gsub("{'Token': 'KINT'}", 'KINT', x, perl = TRUE)
   x <- gsub("{'Token': 'KSM'}", 'KSM', x, perl = TRUE)
+  x <- gsub("{'Token': 'VSKSM'}", 'VSKSM', x, perl = TRUE)
   x <- gsub("{'Token': 'KUSD'}", 'KUSD', x, perl = TRUE)
   x <- gsub("{'Token': 'LKSM'}", 'LKSM', x, perl = TRUE)
   x <- gsub("{'Token': 'PHA'}", 'PHA', x, perl = TRUE)
@@ -114,50 +116,54 @@ fixToken <- function(x) {
   x <- gsub("{'Token': 'DOT'}", 'DOT', x, perl = TRUE)
   x <- gsub("{'Token': 'LDOT'}", 'LDOT', x, perl = TRUE)
 
+
+  x <- gsub("{'DexShare' ", 'lp:', x, perl = TRUE)
+  x <- gsub("}", '', x, perl = TRUE)
   x
 }
+
 
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
 tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
-                              c("ACA", "Acala", 12),
-                              c("AIR","Altair", 18),
-                              c("ARIS","PolarisDAO", 8),
-                              c("AUSD","Acala Dollar", 12),
-                              c("BNC","Bifrost Asgard", 12),
-                              c("BSX","Basilisk", 12),
-                              c("CASH","Compound CASH", 8),
-                              c("CRAB","Crab Parachain Token", 18),
-                              c("CSM","Crust Storage Market", 12),
-                              c("DOT","Polkadot", 10),
-                              c("DOT (on Homa)","Polkadot", 10),
-                              c("EQD","Equilibrium USD", 9),
-                              c("GENS","Genshiro Native Token", 9),
-                              c("HKO","Heiko", 12),
-                              c("KAR","Karura", 12),
-                              c("KBTC","Kintsugi Wrapped BTC", 8),
-                              c("KICO","KICO", 14),
-                              c("KINT","Kintsugi Native Token", 12),
-                              c("KMA","Calamri", 12),
-                              c("KSM","Kusama", 12),
-                              c("KSM (on Homa)","Kusama", 12),
-                              c("KUSD","Karura Dollar", 12),
-                              c("LCDOT","Liquid Crowdloan DOT", 10),
-                              c("LDOT","Liquid DOT", 10),
-                              c("LKSM","Liquid KSM", 12),
-                              c("MOVR","Moonriver", 18),
-                              c("NEER","Metaverse.Network Pioneer", 18),
-                              c("PHA","Phala Native Token", 12),
-                              c("QTZ","Quartz", 18),
-                              c("RMRK","Remark", 10),
-                              c("RENBTC","Ren Protocol BTC", 8),
-                              c("TAI","Taiga", 12),
-                              c("taiKSM","Taiga KSM", 12),
-                              c("TEER","Integritee Trusted Execution Environment", 12),
-                              c("USDC","USD Coin (Wormhole)", 6),
-                              c("USDT","Tether USD", 6),
-                              c("VSKSM","Bifrost Voucher Slot KSM", 12)))
+                              c("ACA", "aca-token", 12),
+                              c("AIR","altair", 18),
+                              c("ARIS","polaris-dao", 8),
+                              c("AUSD","acala-dollar", 12),
+                              c("BNC","bifrost-native-coin", 12),
+                              c("BSX","basilisk", 12),
+                              c("CASH","compound-cash", 8),
+                              c("CRAB","darwinia-crab-network", 18),
+                              c("CSM","crust-storage-market", 12),
+                              c("DOT","polkadot", 10),
+                              c("DOT (on Homa)","staked polkadot", 10),
+                              c("EQD","equilibrium-usd", 9),
+                              c("GENS","genshiro", 9),
+                              c("HKO","heiko", 12),
+                              c("KAR","karura", 12),
+                              c("KBTC","kintsugi-btc", 8),
+                              c("KICO","kico", 14),
+                              c("KINT","kintsugi", 12),
+                              c("KMA","calamri", 12),
+                              c("KSM","kusama", 12),
+                              c("KSM (on Homa)","staked-kusama", 12),
+                              c("KUSD","karura-dollar", 12),
+                              c("LCDOT","liquid-crowdloan-dot", 10),
+                              c("LDOT","liquid-dot", 10),
+                              c("LKSM","liquid-ksm", 12),
+                              c("MOVR","moonriver", 18),
+                              c("NEER","metaverse-network-pioneer", 18),
+                              c("PHA","pha", 12),
+                              c("QTZ","quartz", 18),
+                              c("RMRK","rmrk", 10),
+                              c("RENBTC","renbtc", 8),
+                              c("TAI","tai", 12),
+                              c("taiKSM","tai-ksm", 12),
+                              c("TEER","integritee-trusted-execution-environment", 12),
+                              c("USDC","usd-coin", 6),
+                              c("USDT","tether", 6),
+                              c("VSKSM","bifrost-voucher-slot-ksm", 12)))
 setnames(tokens, c("Token","Name","decimals"))
 try(tokens[, divisor := (as.numeric(substr(as.character(1e20), 1, as.numeric(decimals) + 1))), by = Token], silent = TRUE)
 
