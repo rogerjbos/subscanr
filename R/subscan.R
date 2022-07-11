@@ -226,7 +226,6 @@ extract_events <- function(core_data, params) {
 
     for (i in 1:length(params)) {
         ti <- fromJSON(params[[i]], flatten=TRUE)
-        ti
 
         if (core_data[i, module_id] == "cdpengine") {
           if (core_data[i, event_id] == "LiquidateUnsafeCDP") {

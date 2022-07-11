@@ -68,12 +68,17 @@ get_polkaholic_chains <- function() {
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_polkaholic_events <- function(chain, module, call, startDate, endDate) {
+get_polkaholic_events <- function(chain, module, call, startDate, endDate, startBlock = NA, endBlock = NA) {
 
-  # chain = "karura"; module = "dex"; call = 'Swap'; startDate='2022-07-01'; endDate='2022-07-04'
+  # chain = "karura"; module = "dex"; call = 'Swap'; startDate='2022-07-01'; endDate='2022-07-03'
+  # chain = "karura"; module = "dex"; call = 'Swap'; startBlock=2208540; endBlock=2208550
   api_call <- 'api.polkaholic.io/search/events'
   baseurl <- paste0('https://', api_call)
-  body = list(chainIdentifier = chain, section = module, method = call, dateStart = startDate, dateEnd = endDate)
+  if (!is.na(startBlock) & !is.na(endBlock)) {
+    body = list(chainIdentifier = chain, section = module, method = call, blockNumberStart = startBlock, blockNumberEnd = endBlock)
+  } else {
+    body = list(chainIdentifier = chain, section = module, method = call, dateStart = startDate, dateEnd = endDate)
+  }
 
   r <- POST(url = baseurl,
             add_headers(polkaholic_api_header, 'Content-Type: application/json'),
@@ -93,6 +98,16 @@ get_polkaholic_events <- function(chain, module, call, startDate, endDate) {
   # add a human-readable date
   tmp[, time := as.POSIXct(blockTS, origin = "1970-01-01", tz = 'UTC')]
 
+  if (module =="dex" & call == "Swap") {
+    if (nrow(tmp) > 0) {
+      d <- list()
+      for (i in 1:nrow(tmp)) {
+        d[[i]] <- get_polkaholic_transaction(tmp$extrinsicHash[i])
+      }
+      out <- rbindlist(d, fill = TRUE)
+      return(out)
+    }
+  }
   tmp
 
 }
@@ -157,7 +172,7 @@ get_polkaholic_hash <- function(TxHash) {
 #' @export
 get_polkaholic_transaction <- function(TxHash) {
 
-  # TxHash = '0x1d6ef28701799a5a59ff4b4ff14cfe85e58140208af1c69f7c46bdf3830d081f'
+  # TxHash = '0xd2749f00dd78af2aae0ae77f2f48251735b8af8a7ad778f22a7b1de69c9b5c01'
   api_call <- 'api.polkaholic.io/tx/' %+% TxHash %+% '?decorate=true&extra=usd,address,related,data'
   baseurl <- paste0('https://', api_call)
 
@@ -178,6 +193,23 @@ get_polkaholic_transaction <- function(TxHash) {
   # add a human-readable date
   tmp[, time := as.POSIXct(ts, origin = "1970-01-01", tz = 'UTC')]
 
-  tmp
+  tmp2 <- tmp[events.section == 'dex']
+  d <- list()
+  for (i in 1:nrow(tmp2)) {
+    ti <- tmp2[i]$events.decodedData[[1]]$data
+    tokens <- ifelse(!is.na(ti[[2]]$token), ti[[2]]$token, names(ti[[2]][2]) %+% "://" %+%  ti[[2]][[2]])
+    amount <- ti[[3]]
+    while(length(amount) < 4) {
+      tokens <- c(tokens, NA)
+      amount <- c(amount, NA)
+    }
+    d[[i]] <- t(c(tokens, amount)) %>% as.data.table
+  }
+  out <- rbindlist(d) %>%
+    as.data.frame %>%
+    setnames(c("token" %+% rep(0:3), "amount" %+% rep(0:3)))
+
+  out <- cbind(tmp2, out)
+  out
 
 }
