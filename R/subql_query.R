@@ -187,7 +187,6 @@ get_query <- function(url, query) {
 
 }
 
-
 # Helper function used by all the other query calls
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
@@ -241,7 +240,7 @@ get_graph <- function(endpoint, method, edges, window, filter = "timestamp", end
     resList[[i]] <- res
     if (result$data$query[[method]]$pageInfo$hasNextPage == FALSE) break
   }
-  res <- rbindlist(resList)
+  res <- rbindlist(resList, use.names = TRUE, fill = TRUE)
   setnames(res, old = names(res), new = gsub("node.", "", names(res)))
 
   res
@@ -697,10 +696,95 @@ getMint_acala_homa <- function(network, window, filter = '', endpage = 100, stag
   res <- get_graph(endpoint, method, edges, window, filter, endpage)
 
   setorder(res, timestamp)
-  # res[, cumsumMinted := cumsum(amountMinted)]
-  # res[, cumsumStaking := cumsum(stakingCurrencyAmount)]
-  # res[, ratio := cumsumMinted / cumsumStaking]
+  res
 
+}
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getRequestedRedeem_acala_homa <- function(network, window, filter = '', endpage = 100, staging = FALSE) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-homa"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-homa"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "requestedRedeems"
+  edges <- "address {id} amount allowFastMatch block {id} extrinsic {id} timestamp"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+
+  setorder(res, timestamp)
+  res
+
+}
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getRedeemRequestCancelled_acala_homa <- function(network, window, filter = '', endpage = 100, staging = FALSE) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-homa"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-homa"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "redeemRequestCancelleds"
+  edges <- "address {id} amount block {id} extrinsic {id} timestamp"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+
+  setorder(res, timestamp)
+  res
+
+}
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getRedeemByUnbond_acala_homa <- function(network, window, filter = '', endpage = 100, staging = FALSE) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-homa"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-homa"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "redeemedByUnbonds"
+  edges <- "address {id} eraIndexWhenUnbond liquidAmount unbondingStakingAmount block {id} extrinsic {id} timestamp"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+
+  setorder(res, timestamp)
+  res
+
+}
+
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getRedeemByFastMatch_acala_homa <- function(network, window, filter = '', endpage = 100, staging = FALSE) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-homa"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-homa"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "redeemedByFastMatches"
+  edges <- "address {id} matchedLiquidAmount feeInLiquid redeemedStakingAmount block {id} extrinsic {id} timestamp"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+
+  setorder(res, timestamp)
   res
 
 }

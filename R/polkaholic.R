@@ -102,6 +102,8 @@ get_polkaholic_events <- function(chain, module, call, startDate, endDate, start
     if (nrow(tmp) > 0) {
       d <- list()
       for (i in 1:nrow(tmp)) {
+        # Pause to avoid 429 error
+        if (i %% 5 == 0) Sys.sleep(1)
         d[[i]] <- get_polkaholic_transaction(tmp$extrinsicHash[i])
       }
       out <- rbindlist(d, fill = TRUE)
