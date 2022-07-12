@@ -408,6 +408,7 @@ getLoansDailyCollateral_acala_loan <- function(network, window, staging = FALSE)
             depositChangedUSD debitChangedUSD debitExchangeRate timestamp txCount"
   res <- get_graph(endpoint, method, edges, window)
 
+  stopifnot(nrow(res) > 0)
   res[, Date := as.Date(timestamp)]
   res[, collateral.id := fixToken(collateral.id)]
   res <- merge(res, tokens, by.x='collateral.id', by.y='Token')
