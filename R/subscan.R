@@ -116,7 +116,7 @@ get_subscan_events <- function(nobs = 500, network = 'Acala', start_page = 1, mo
 
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
   # nobs = 500; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
-  # nobs = 100; network = 'Acala'; module = 'treasury'; call = 'Deposit'; start_page = 1; extract = TRUE
+  # nobs = 100; network = 'Acala'; module = 'homa'; call = ''; start_page = 1; extract = TRUE
   # nobs = 100; network = 'Karura'; module = 'cdpengine'; call = 'LiquidateUnsafeCDP'; start_page = 1; extract = TRUE
 
   api_host <- get_endpoint(network)
@@ -222,6 +222,11 @@ extract_events <- function(core_data, params) {
     }
     if (any(core_data$module_id %in% c('cdpengine'))) {
       cdpengine_LiquidateUnsafeCDP_list <- list()
+    }
+    if (any(core_data$module_id %in% c('homa'))) {
+      homa_RedeemedByFastMatch_list <- list()
+      homa_RequestedRedeem_list <- list()
+      homa_Minted_list <- list()
     }
 
     for (i in 1:length(params)) {
@@ -405,6 +410,25 @@ extract_events <- function(core_data, params) {
 
             dex_Swap_list[[i]] <- data.table(core_data[i], out)
           }
+        } else if (core_data[i, module_id] == "homa") {
+          if (core_data[i, event_id] == "Minted") {
+            out <- data.table(minter = ti$value[[1]],
+                              staking_currency_amount = ti$value[[2]],
+                              liquid_amount_received = ti$value[[3]],
+                              liquid_amount_added_to_void = ti$value[[4]])
+            homa_Minted_list[[i]] <- data.table(core_data[i], out)
+          } else if (core_data[i, event_id] == "RequestedRedeem") {
+            out <- data.table(redeemer = ti$value[[1]],
+                              liquid_amount = ti$value[[2]],
+                              allow_fast_match = ti$value[[3]])
+            homa_RequestedRedeem_list[[i]] <- data.table(core_data[i], out)
+          } else if (core_data[i, event_id] == "RedeemedByFastMatch") {
+            out <- data.table(account = ti$value[[1]],
+                       matched_liquid_amount = ti$value[[2]],
+                       fee_in_liquid = ti$value[[3]],
+                       redeemed_staking_amount = ti$value[[4]])
+            homa_RedeemedByFastMatch_list[[i]] <- data.table(core_data[i], out)
+          }
         } else if (core_data[i, module_id] == "zenlinkprotocol") {
 
           if (core_data[i, event_id] == "LiquidityAdded") {
@@ -437,11 +461,36 @@ extract_events <- function(core_data, params) {
             dex_Swap_list[[i]] <- data.table(core_data[i], out)
           }
         } # end dex_Swap
-      } # end for
+    } # end for
 
   } # end if
 
   out <- list()
+
+  if (any(core_data$module_id %in% 'homa')) {
+    if (length(homa_Minted_list) > 0) {
+      homa_Minted <- rbindlist(homa_Minted_list)
+    } else {
+      homa_Minted <- NULL
+    }
+
+    if (length(homa_RequestedRedeem_list) > 0) {
+      homa_RequestedRedeem <- rbindlist(homa_RequestedRedeem_list)
+    } else {
+      homa_RequestedRedeem <- NULL
+    }
+
+    if (length(homa_RedeemedByFastMatch_list) > 0) {
+      homa_RedeemedByFastMatch <- rbindlist(homa_RedeemedByFastMatch_list)
+    } else {
+      homa_RedeemedByFastMatch <- NULL
+    }
+    out <- list(out,
+                homa_Minted = homa_Minted,
+                homa_RequestedRedeem = homa_RequestedRedeem,
+                homa_RedeemedByFastMatch = homa_RedeemedByFastMatch)
+
+  }
 
   if (any(core_data$module_id %in% c('dex','zenlinkprotocol'))) {
     if (length(dex_AddLiquidity_list) > 0) {
