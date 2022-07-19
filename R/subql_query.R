@@ -681,7 +681,7 @@ getPositions_acala_loan <- function(network, window, filter, endpage = 2000, sta
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getMint_acala_homa <- function(network, window, filter = '', endpage = 100, staging = FALSE) {
+getMint_acala_homa <- function(network, window, filter = '', endpage = 1000, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-homa"
@@ -703,7 +703,7 @@ getMint_acala_homa <- function(network, window, filter = '', endpage = 100, stag
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getRequestedRedeem_acala_homa <- function(network, window, filter = '', endpage = 100, staging = FALSE) {
+getRequestedRedeem_acala_homa <- function(network, window, filter = '', endpage = 1000, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-homa"
@@ -725,7 +725,7 @@ getRequestedRedeem_acala_homa <- function(network, window, filter = '', endpage 
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getRedeemRequestCancelled_acala_homa <- function(network, window, filter = '', endpage = 100, staging = FALSE) {
+getRedeemRequestCancelled_acala_homa <- function(network, window, filter = '', endpage = 1000, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-homa"

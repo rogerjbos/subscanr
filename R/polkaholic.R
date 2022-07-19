@@ -68,11 +68,12 @@ get_polkaholic_chains <- function() {
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_polkaholic_events <- function(chain, module, call, startDate, endDate, startBlock = NA, endBlock = NA) {
+get_polkaholic_events <- function(chain, module, call, startDate, endDate, startBlock = NA, endBlock = NA, nobs = 10000) {
 
   # chain = "karura"; module = "dex"; call = 'Swap'; startDate='2022-07-01'; endDate='2022-07-03'
-  # chain = "karura"; module = "dex"; call = 'Swap'; startBlock=2208540; endBlock=2208550
-  api_call <- 'api.polkaholic.io/search/events'
+  # chain = "karura"; module = "dex"; call = 'Swap'; startBlock=1; endBlock=2208550
+  stopifnot(nobs <= 100000)
+  api_call <- 'api.polkaholic.io/search/events?limit=' %+% nobs
   baseurl <- paste0('https://', api_call)
   if (!is.na(startBlock) & !is.na(endBlock)) {
     body = list(chainIdentifier = chain, section = module, method = call, blockNumberStart = startBlock, blockNumberEnd = endBlock)
@@ -84,7 +85,7 @@ get_polkaholic_events <- function(chain, module, call, startDate, endDate, start
             add_headers(polkaholic_api_header, 'Content-Type: application/json'),
             body = body,
             encode = "json")
-  # r$status_code
+  r$status_code
   while(r$status_code != 200) {
     print("Error " %+% r$status_code)
     Sys.sleep(3)
@@ -97,8 +98,36 @@ get_polkaholic_events <- function(chain, module, call, startDate, endDate, start
     as.data.table
   # add a human-readable date
   tmp[, time := as.POSIXct(blockTS, origin = "1970-01-01", tz = 'UTC')]
+  tmp
 
-  if (module =="dex" & call == "Swap") {
+}
+
+# t1 <- get_polkaholic_events(chain = "karura", module = "dex", call = 'Swap', startBlock=1, endBlock=2208550, nobs = 10)
+# t2 <- extract_polkaholic_events(t1)
+# t2
+
+#' Get events from the Polkadot blockchain from the Polkaholic api
+#' https://docs.polkaholic.io
+#'
+#' @name extract_polkaholic_events
+#' @title extract_polkaholic_events
+#' @encoding UTF-8
+#' @concept Extract events from the Polkadot blockchain from the Polkaholic api
+#' @param dat data.table output from `get_polkaholic_events`
+#'
+#' @return data.table
+#'
+#' @examples
+#' t1 <- get_polkaholic_events(chain = "karura", module = "dex", call = 'Swap', startBlock=1, endBlock=2208550, nobs = 10)
+#' t2 <- extract_polkaholic_events(t1)
+#'
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+extract_polkaholic_events <- function(dat) {
+
+  if (is.null(dat) || nrow(dat) < 1) {
+    print("Supplied data is not suitable.  Did you run `get_polkaholic_events`?")
+  } else if (dat$section =="dex" & dat$method == "Swap") {
     if (nrow(tmp) > 0) {
       d <- list()
       for (i in 1:nrow(tmp)) {
@@ -109,9 +138,9 @@ get_polkaholic_events <- function(chain, module, call, startDate, endDate, start
       out <- rbindlist(d, fill = TRUE)
       return(out)
     }
+  } else {
+    print("Extractor not defined for section='" %+% dat$section[1] %+% "' and/or method='" %+% dat$method[1] %+% "'.")
   }
-  tmp
-
 }
 
 #' Get supported chains from the Polkaholic api

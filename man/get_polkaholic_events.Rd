@@ -12,7 +12,8 @@ get_polkaholic_events(
   startDate,
   endDate,
   startBlock = NA,
-  endBlock = NA
+  endBlock = NA,
+  nobs = 10000
 )
 }
 \arguments{
