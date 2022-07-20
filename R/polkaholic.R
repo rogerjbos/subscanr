@@ -64,11 +64,11 @@ get_polkaholic_chains <- function() {
 #' @return data.table
 #'
 #' @examples
-#' get_polkaholic_events(chain = "karura", module = "dex", call = 'Swap', startDate='2022-07-01', endDate='2022-07-02')
+#' get_polkaholic_events(chain = "karura", module = "dex", call = 'Swap', startDate='2022-07-01', endDate='2022-07-02', nobs = 5)
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_polkaholic_events <- function(chain, module, call, startDate, endDate, startBlock = NA, endBlock = NA, nobs = 10000) {
+get_polkaholic_events <- function(chain, module, call, startDate, endDate, startBlock = NA, endBlock = NA, nobs = 1000) {
 
   # chain = "karura"; module = "dex"; call = 'Swap'; startDate='2022-07-01'; endDate='2022-07-03'
   # chain = "karura"; module = "dex"; call = 'Swap'; startBlock=1; endBlock=2208550
@@ -178,9 +178,6 @@ get_polkaholic_hash <- function(TxHash) {
   tmp <- content(r, as="text", encoding="UTF-8") %>%
     fromJSON(flatten=TRUE) %>%
     as.data.table
-  # add a human-readable date
-  tmp[, time := as.POSIXct(ts, origin = "1970-01-01", tz = 'UTC')]
-
   tmp
 
 }

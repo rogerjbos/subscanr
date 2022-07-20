@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Roger J. Bos" />
+
+<meta name="date" content="2022-07-19" />
+
+<title>Substrate blockchain analysis in R</title>
+
+<script src="data:application/javascript;base64,Ly8gUGFuZG9jIDIuOSBhZGRzIGF0dHJpYnV0ZXMgb24gYm90aCBoZWFkZXIgYW5kIGRpdi4gV2UgcmVtb3ZlIHRoZSBmb3JtZXIgKHRvCi8vIGJlIGNvbXBhdGlibGUgd2l0aCB0aGUgYmVoYXZpb3Igb2YgUGFuZG9jIDwgMi44KS4KZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcignRE9NQ29udGVudExvYWRlZCcsIGZ1bmN0aW9uKGUpIHsKICB2YXIgaHMgPSBkb2N1bWVudC5xdWVyeVNlbGVjdG9yQWxsKCJkaXYuc2VjdGlvbltjbGFzcyo9J2xldmVsJ10gPiA6Zmlyc3QtY2hpbGQiKTsKICB2YXIgaSwgaCwgYTsKICBmb3IgKGkgPSAwOyBpIDwgaHMubGVuZ3RoOyBpKyspIHsKICAgIGggPSBoc1tpXTsKICAgIGlmICghL15oWzEtNl0kL2kudGVzdChoLnRhZ05hbWUpKSBjb250aW51ZTsgIC8vIGl0IHNob3VsZCBiZSBhIGhlYWRlciBoMS1oNgogICAgYSA9IGguYXR0cmlidXRlczsKICAgIHdoaWxlIChhLmxlbmd0aCA+IDApIGgucmVtb3ZlQXR0cmlidXRlKGFbMF0ubmFtZSk7CiAgfQp9KTsK"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<link rel="stylesheet" href="data:text/css,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" type="text/css" />
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Substrate blockchain analysis in R</h1>
+<h4 class="author">Roger J. Bos</h4>
+<h4 class="date">2022-07-19</h4>
+
+
+
+<p>This vignettes demonstrates the functionality of the <em>subscanr</em> package that facilitates substrate blockchain analysis in R. By substrate we are referring to the Polkadot / Kusama (DotSama) ecosystem, which could include up to 200 different parachains.</p>
+<p>The package provides an interface into three different indexing services in the DotSama ecosystem, along with a bonus section showing how to access on-chain data using Python code in R:</p>
+<ul>
+<li><a href="https://www.subscan.io/">Subscan</a></li>
+<li><a href="https://subquery.network/">Sub Query</a></li>
+<li><a href="https://polkaholic.io/#chains">Polkaholic</a></li>
+<li><a href="https://github.com/polkascan/py-substrate-interface">Python Substrate Interface</a></li>
+</ul>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>You can install the <code>subscanr</code> package using devtools (or remotes) as follows:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(devtools)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install_github</span>(<span class="st">&quot;rogerjbos/subscanr&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Skipping install of &#39;subscanr&#39; from a github remote, the SHA1 (de9a22ed) has not changed since last install.</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   Use `force = TRUE` to force installation</span></span></code></pre></div>
+<p>Once installed, you can load the package. The package comes with a number of functions which will be detailed below, and it also comes with a few objects and helper functions. I won’t cover all of them, but the <code>tokens</code> object is useful because it shows the number of decimal places used for each token. This object is update manually so it may be always be as up-to-date as it should be!</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(subscanr)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Loading required package: httr</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Attaching package: &#39;subscanr&#39;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; The following object is masked _by_ &#39;.GlobalEnv&#39;:</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     %+%</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>tokens</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             Token                                     Name decimals</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:          3USD                               Taiga 3USD       12</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:           ACA                                aca-token       12</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:           AIR                                   altair       18</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:          ARIS                              polaris-dao        8</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:          AUSD                             acala-dollar       12</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:           BNC                      bifrost-native-coin       12</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:           BSX                                 basilisk       12</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:          CASH                            compound-cash        8</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:          CRAB                    darwinia-crab-network       18</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:           CSM                     crust-storage-market       12</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:           DOT                                 polkadot       10</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12: DOT (on Homa)                          staked polkadot       10</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:           EQD                          equilibrium-usd        9</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:          GENS                                 genshiro        9</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:           HKO                                    heiko       12</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:           KAR                                   karura       12</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:          KBTC                             kintsugi-btc        8</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:          KICO                                     kico       14</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:          KINT                                 kintsugi       12</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:           KMA                                  calamri       12</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:           KSM                                   kusama       12</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22: KSM (on Homa)                            staked-kusama       12</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:          KUSD                            karura-dollar       12</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:         LCDOT                     liquid-crowdloan-dot       10</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:          LDOT                               liquid-dot       10</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:          LKSM                               liquid-ksm       12</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:          MOVR                                moonriver       18</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:          NEER                metaverse-network-pioneer       18</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:           PHA                                      pha       12</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:           QTZ                                   quartz       18</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:          RMRK                                     rmrk       10</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:        RENBTC                                   renbtc        8</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:           TAI                                      tai       12</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:        taiKSM                                  tai-ksm       12</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:          TEER integritee-trusted-execution-environment       12</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:          USDC                                 usd-coin        6</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:          USDT                                   tether        6</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:         VSKSM                 bifrost-voucher-slot-ksm       12</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             Token                                     Name decimals</span></span></code></pre></div>
+</div>
+<div id="subscan" class="section level2">
+<h2>Subscan</h2>
+<p>Subscan provides an <a href="https://support.subscan.io/#introduction">API</a> for accessing their data. You have to request a key <a href="https://pro.subscan.io/login">here</a>. I will show some examples of pulling data from the Subscan API below, but if you have any questions, the best place to ask them is in their <a href="https://app.element.io/#/room/#subscan:matrix.org">maxtrix site</a>.</p>
+<p>Subscan currently covers different chains, which are stored in the <code>endpoints</code> variable. You can use the get_endpoint() function to get the host address:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(endpoints)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                      </span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 function (x, on = &quot;months&quot;, k = 1) </span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 {                                  </span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3     if (timeBased(x)) {            </span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4         NR &lt;- length(x)            </span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5         x &lt;- xts(, order.by = x)   </span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6     }</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">get_endpoint</span>(<span class="st">&quot;Acala&quot;</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;acala.api.subscan.io&quot;</span></span></code></pre></div>
+<p>The primary function is <code>get_subscan_events</code>, which we will call using the <code>extract = FALSE</code> parameter. The functions returns two objects. The <code>core_data</code> object lists the general details of each requested event, such as the block number, extrinsic_hash, and timestamp. The <code>params</code> object contains the actual details on the event, but it is in JSON format so it is more difficult to read.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> <span class="fu">get_subscan_events</span>(<span class="at">nobs =</span> <span class="dv">10</span>, <span class="at">network =</span> <span class="st">&#39;Karura&#39;</span>, <span class="at">module =</span> <span class="st">&#39;dex&#39;</span>, <span class="at">call =</span> <span class="st">&#39;Swap&#39;</span>, <span class="at">extract =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;10 rows for page 1/1 Success at 2022-07-19 20:43:05&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># First few lines of the core_data</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tmp<span class="sc">$</span>core_data)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    event_index block_num extrinsic_idx module_id event_id phase event_idx</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:   2302542-2   2302542             2       dex     Swap     0        12</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:   2302492-2   2302492             2       dex     Swap     0        11</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:   2302426-2   2302426             2       dex     Swap     0        11</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:   2302426-2   2302426             2       dex     Swap     0        17</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:   2302424-2   2302424             2       dex     Swap     0        11</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:   2302416-2   2302416             2       dex     Swap     0        11</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                        extrinsic_hash finalized</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1: 0x2d84e81e4a555cead51826ac8b2ed7807b24b75ce5719c9716c694703de42a0b      TRUE</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2: 0x2667ec89c833773c0dd31b29daba373a5f3643faa43a2f43acaeccfa67a9a4cd      TRUE</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3: 0x2b23b2300ba84c7ce5db5b592706c57009fc8ac875ce746c52a201c319e55ff0      TRUE</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4: 0x2b23b2300ba84c7ce5db5b592706c57009fc8ac875ce746c52a201c319e55ff0      TRUE</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5: 0xf13d25e07507be16c90524e0428fb42c65f1abf857e861696eeccd48de3f8765      TRUE</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6: 0x919cfcf4ebdc9887f59c13fae92a76e46c2202309347a317e0c14ea836410806      TRUE</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    block_timestamp</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1:      1658275986</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2:      1658275374</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3:      1658274450</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 4:      1658274450</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 5:      1658274420</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 6:      1658274301</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Parameters for the first event</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>tmp<span class="sc">$</span>params[<span class="dv">1</span>]</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;[{\&quot;type\&quot;:\&quot;[U8; 32]\&quot;,\&quot;type_name\&quot;:\&quot;AccountId\&quot;,\&quot;value\&quot;:\&quot;0x5ac67775f5acecd6d46dfe40e64d17868f1874a3ce89e0af5163310f7240aa79\&quot;},{\&quot;type\&quot;:\&quot;Vec\\u003cacala_primitives:currency:CurrencyId\\u003e\&quot;,\&quot;type_name\&quot;:\&quot;Vec\\u003cCurrencyId\\u003e\&quot;,\&quot;value\&quot;:[{\&quot;Token\&quot;:\&quot;KAR\&quot;},{\&quot;Token\&quot;:\&quot;KUSD\&quot;},{\&quot;Token\&quot;:\&quot;KINT\&quot;}]},{\&quot;type\&quot;:\&quot;Vec\\u003cU128\\u003e\&quot;,\&quot;type_name\&quot;:\&quot;Vec\\u003cBalance\\u003e\&quot;,\&quot;value\&quot;:[\&quot;5800000000000\&quot;,\&quot;3892321276568\&quot;,\&quot;1152957253156\&quot;]}]&quot;</span></span></code></pre></div>
+<p>The <code>get_subscan_events</code> function can be called for any endpoint, but the format of the <code>params</code> object will be different for every module and chain. My works involves the <code>Acala</code> and <code>Karura</code> chains, so I have coded an <code>extract</code> function to re-format the JSON output and add it to the <code>core_data</code> object, but this have only been implemented for <code>Acala</code> and <code>Karura</code>. The default value of the <code>extract</code> parameter is TRUE, so if you call the function again without that parameter, you will see the new <code>core_data</code> object.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> <span class="fu">get_subscan_events</span>(<span class="at">nobs =</span> <span class="dv">10</span>, <span class="at">network =</span> <span class="st">&#39;Karura&#39;</span>, <span class="at">module =</span> <span class="st">&#39;dex&#39;</span>, <span class="at">call =</span> <span class="st">&#39;Swap&#39;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;10 rows for page 1/1 Success at 2022-07-19 20:43:05&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># First few lines of the core_data</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tmp<span class="sc">$</span>core_data)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; NULL</span></span></code></pre></div>
+<p>The Subscan API limits each call to 100 rows of data, so if you set <code>nobs</code> to greater than 100 the function will use pagination to make multiple calls and aggregate the data. If you leave <code>module</code> and/or <code>call</code> empty it will return all events. That will give you an idea of what options are available for a specific chain so you can specify them and narrow your search.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> <span class="fu">get_subscan_events</span>(<span class="at">nobs =</span> <span class="dv">300</span>, <span class="at">network =</span> <span class="st">&#39;Karura&#39;</span>, <span class="at">module =</span> <span class="st">&#39;&#39;</span>, <span class="at">call =</span> <span class="st">&#39;&#39;</span>, <span class="at">extract =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;100 rows for page 1/3 Success at 2022-07-19 20:43:06&quot;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;100 rows for page 2/3 Success at 2022-07-19 20:43:08&quot;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;100 rows for page 3/3 Success at 2022-07-19 20:43:09&quot;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Module and event types returned for the specified chain</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(tmp<span class="sc">$</span>core_data<span class="sc">$</span>module_id)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;balances&quot;           &quot;dex&quot;                &quot;currencies&quot;        </span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [4] &quot;tokens&quot;             &quot;system&quot;             &quot;transactionpayment&quot;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] &quot;treasury&quot;           &quot;incentives&quot;         &quot;acalaoracle&quot;       </span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [10] &quot;xcmpqueue&quot;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(tmp<span class="sc">$</span>core_data<span class="sc">$</span>event_id)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [1] &quot;Deposit&quot;            &quot;Swap&quot;               &quot;Transferred&quot;       </span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [4] &quot;Transfer&quot;           &quot;Withdraw&quot;           &quot;ExtrinsicSuccess&quot;  </span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  [7] &quot;Deposited&quot;          &quot;Endowed&quot;            &quot;Withdrawn&quot;         </span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [10] &quot;TransactionFeePaid&quot; &quot;ClaimRewards&quot;       &quot;NewFeedData&quot;       </span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [13] &quot;Success&quot;</span></span></code></pre></div>
+<p>You can use the <code>get_subscan_token</code> function to get a list of all the tokens available on a specific chain.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">get_subscan_token</span>(<span class="at">network =</span> <span class="st">&#39;Acala&#39;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">get_subscan_metadata</span>(<span class="at">network =</span> <span class="st">&#39;Acala&#39;</span>)</span></code></pre></div>
+</div>
+<div id="sub-query" class="section level2">
+<h2>Sub Query</h2>
+<p>The <code>html_vignette</code> template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:</p>
+<pre><code>output: 
+  rmarkdown::html_vignette:
+    css: mystyles.css</code></pre>
+</div>
+<div id="polkaholic" class="section level2">
+<h2>Polkaholic</h2>
+<p>Polkaholic provides an <a href="https://docs.polkaholic.io/#introduction">API</a> for accessing their data. You have to request a key <a href="https://polkaholic.io/login">here</a>. I will show some examples of pulling data from the Polkaholic API below, but if you have any questions, the best place to ask them is in their <a href="https://app.element.io/#/room/#subscan:matrix.org">maxtrix site</a>.</p>
+<p>Subscan currently covers 60 different chains, which you can view using the <code>get_polkaholic_chains</code> function.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">get_polkaholic_chains</span>()</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                    id prefix chainID           chainName    symbol</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:            altair    136   22088              Altair       AIR</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:             bajun     42   22119       Bajun network          </span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:          basilisk  10041   22090            Basilisk       BSX</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:       bifrost-ksm      6   22001      Bifrost-kusama       BNC</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5: bitcountrypioneer    268   22096 Bit.country pioneer      NEER</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:          calamari     78   22084            Calamari       KMA</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:              crab     42   22105       Darwinia crab      CRAB</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:       dorafactory    128   22115        Dora factory      DORA</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:         encointer      2   21001           Encointer UNDEFINED</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:             imbue     42   22121       Imbue network      &lt;NA&gt;</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:        integritee     13   22015          Integritee      TEER</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:           kabocha     42   22113             Kabocha       KAB</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:            karura      8   22000              Karura       KAR</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:             khala     30   22004               Khala       PHA</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:              kico     42   22107                Kico      KICO</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:          kintsugi   2092   22092            Kintsugi      KINT</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:            kusama      2       2              Kusama       KSM</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:            listen     42   22118              Listen        LT</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:            litmus    131   22106              Litmus       LIT</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:          mangatax     42   22110             Mangata       MGX</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:              mars     42   22008                Mars      MARS</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:         moonriver   1285   22023           Moonriver      MOVR</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:    parallel-heiko    110   22085      Parallel heiko       HKO</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:           picasso     49   22087             Picasso      PICA</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:            pichiu     42   22102              Pichiu      PCHU</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:            quartz    255   22095              Quartz       QTZ</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:        robonomics     32   22048          Robonomics       XRT</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:            shadow     66   22012        Crust shadow       CSM</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:            shiden      5   22007              Shiden       SDN</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:              sora     69   22011         Sora kusama       XOR</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:         spiritnet     38   22086      Kilt spiritnet      KILT</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:         statemine      2   21000           Statemine       KSM</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:     subgame-gamma     27   22018       Subgame gamma      GSGB</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:        subsocialx     28   22100          Subsocialx       SUB</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:         tanganika     33   22116           Tanganika       DHX</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:            turing     51   22114              Turing       TUR</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:        unorthodox     42   22094          Unorthodox UNDEFINED</span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:         zeitgeist     73   22101           Zeitgeist       ZTG</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:             acala     10    2000               Acala       ACA</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:              ares     34    2028                Ares      ARES</span></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:             astar      5    2006               Astar      ASTR</span></span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:       bifrost-dot      6    2030    Bifrost-polkadot       BNC</span></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:        centrifuge     36    2031          Centrifuge       CFG</span></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:            clover    128    2002              Clover       CLV</span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:        composable     50    2019  Composable finance      LAYR</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:           efinity   1110    2021             Efinity       EFI</span></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:       equilibrium     68    2011         Equilibrium        EQ</span></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:           hydradx     63    2034             Hydradx       HDX</span></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:          interlay   2032    2032            Interlay      INTR</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:             kapex   2007    2007               Kapex     KAPEX</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:          litentry     31    2013            Litentry       LIT</span></span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:          moonbeam   1284    2004            Moonbeam      GLMR</span></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:             nodle     37    2026               Nodle      NODL</span></span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:       origintrail    101    2043        Origin trail       OTP</span></span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:          parallel    172    2012            Parallel      PARA</span></span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:             phala     30    2035               Phala       PHA</span></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:          polkadex     88    2040            Polkadex      PDEX</span></span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:          polkadot      0       0            Polkadot       DOT</span></span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:         statemint      0    1000           Statemint       DOT</span></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:            unique   7391    2037              Unique       UNQ</span></span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                    id prefix chainID           chainName    symbol</span></span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     lastFinalizedTS                                         iconUrl</span></span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:      1658277782            https://cdn.polkaholic.io/altair.svg</span></span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:      1658277783             https://cdn.polkaholic.io/bajun.png</span></span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:      1658277782          https://cdn.polkaholic.io/basilisk.png</span></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:      1658277782           https://cdn.polkaholic.io/bifrost.png</span></span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:      1658277782 https://cdn.polkaholic.io/bitcountryPioneer.png</span></span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:      1658277782          https://cdn.polkaholic.io/calamari.png</span></span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:      1658277782              https://cdn.polkaholic.io/crab.svg</span></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:      1658277782       https://cdn.polkaholic.io/dorafactory.png</span></span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:      1658277782         https://cdn.polkaholic.io/encointer.svg</span></span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:      1658277783             https://cdn.polkaholic.io/imbue.png</span></span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:      1658277782        https://cdn.polkaholic.io/integritee.svg</span></span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:      1658277765           https://cdn.polkaholic.io/kabocha.svg</span></span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:      1658277782            https://cdn.polkaholic.io/karura.svg</span></span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:      1658277783             https://cdn.polkaholic.io/khala.svg</span></span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:      1658277782              https://cdn.polkaholic.io/kico.png</span></span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:      1658277782          https://cdn.polkaholic.io/kintsugi.png</span></span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:      1658277784            https://cdn.polkaholic.io/kusama.svg</span></span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:      1658277783            https://cdn.polkaholic.io/listen.png</span></span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:      1658277783            https://cdn.polkaholic.io/litmus.png</span></span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:      1658277005           https://cdn.polkaholic.io/mangata.svg</span></span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:              NA              https://cdn.polkaholic.io/ares.svg</span></span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:      1658277782         https://cdn.polkaholic.io/moonriver.png</span></span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:      1658277782             https://cdn.polkaholic.io/heiko.png</span></span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:      1658277765           https://cdn.polkaholic.io/picasso.svg</span></span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:      1658277782            https://cdn.polkaholic.io/pichiu.png</span></span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:      1658192116            https://cdn.polkaholic.io/quartz.png</span></span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:      1658277782        https://cdn.polkaholic.io/robonomics.svg</span></span>
+<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:      1658277766            https://cdn.polkaholic.io/shadow.svg</span></span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:      1658277782            https://cdn.polkaholic.io/shiden.png</span></span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:      1658277783              https://cdn.polkaholic.io/sora.svg</span></span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:      1658277782              https://cdn.polkaholic.io/kilt.png</span></span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:      1658277782         https://cdn.polkaholic.io/statemine.svg</span></span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:              NA           https://cdn.polkaholic.io/subgame.svg</span></span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:      1658277782         https://cdn.polkaholic.io/subsocial.svg</span></span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:      1658277783         https://cdn.polkaholic.io/tanganika.png</span></span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:      1658277782            https://cdn.polkaholic.io/turing.png</span></span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:              NA        https://cdn.polkaholic.io/unorthodox.png</span></span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:      1658277782         https://cdn.polkaholic.io/zeitgeist.png</span></span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:      1658277771             https://cdn.polkaholic.io/acala.png</span></span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:              NA              https://cdn.polkaholic.io/ares.svg</span></span>
+<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:      1658277786             https://cdn.polkaholic.io/astar.png</span></span>
+<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:      1658277772           https://cdn.polkaholic.io/bifrost.png</span></span>
+<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:      1658277771        https://cdn.polkaholic.io/centrifuge.png</span></span>
+<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:      1658277771            https://cdn.polkaholic.io/clover.png</span></span>
+<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:      1658277758 https://cdn.polkaholic.io/composableFinance.png</span></span>
+<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:      1658277771           https://cdn.polkaholic.io/efinity.svg</span></span>
+<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:      1658277771       https://cdn.polkaholic.io/equilibrium.svg</span></span>
+<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:      1658277775           https://cdn.polkaholic.io/hydradx.svg</span></span>
+<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:      1658277771          https://cdn.polkaholic.io/interlay.svg</span></span>
+<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:      1651695245             https://cdn.polkaholic.io/totem.svg</span></span>
+<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:      1658014520          https://cdn.polkaholic.io/litentry.png</span></span>
+<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:      1658277772          https://cdn.polkaholic.io/moonbeam.png</span></span>
+<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:      1658277771             https://cdn.polkaholic.io/nodle.svg</span></span>
+<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:      1658277775       https://cdn.polkaholic.io/origintrail.png</span></span>
+<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:      1658277771          https://cdn.polkaholic.io/parallel.png</span></span>
+<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:      1658277771             https://cdn.polkaholic.io/phala.svg</span></span>
+<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:      1657214451          https://cdn.polkaholic.io/polkadex.svg</span></span>
+<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:      1658277776          https://cdn.polkaholic.io/polkadot.png</span></span>
+<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:      1658277775         https://cdn.polkaholic.io/statemint.svg</span></span>
+<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:      1658277774            https://cdn.polkaholic.io/unique.svg</span></span>
+<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     lastFinalizedTS                                         iconUrl</span></span>
+<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     numExtrinsics7d numExtrinsics30d numExtrinsics numSignedExtrinsics7d</span></span>
+<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:           62665           259252       2529270                   635</span></span>
+<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:           25542            25542         25542                     0</span></span>
+<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:           21624           282778       2946231                   620</span></span>
+<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:           74000           365892       4689837                  3659</span></span>
+<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:           67841           288512       2318379                    95</span></span>
+<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:           69634           337586       3606375                   314</span></span>
+<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:           58801           279660       1157158                    71</span></span>
+<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:           61124           299088        310174                    12</span></span>
+<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:           59603           291127       1870144                    41</span></span>
+<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:           47264            47264         47264                     0</span></span>
+<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:           69943           343570       1281793                   205</span></span>
+<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:           25310            25310         25310                     0</span></span>
+<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:           84086           406298       5692188                 13702</span></span>
+<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:          754001          3636472      15430601                686177</span></span>
+<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:           65319           327859       1566726                  2691</span></span>
+<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:           54437           324883       2751248                  4045</span></span>
+<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:          313846          1534124      42777358                 28328</span></span>
+<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:           67813           158456        158456                    27</span></span>
+<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:           46302           278807       1309204                    44</span></span>
+<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:           41622           201797        749366                   228</span></span>
+<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:              NA               NA            NA                    NA</span></span>
+<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:          295815          1465637      27497041                   413</span></span>
+<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:           82122           407234       4812743                 11554</span></span>
+<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:           63512           311063       1277395                     0</span></span>
+<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:           41177           197590        197590                     5</span></span>
+<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:              NA           252154       2381969                    NA</span></span>
+<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:          244957          1180903       6818289                136663</span></span>
+<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:           66735           327345        339340                    27</span></span>
+<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:          100715           411977       6483915                  1324</span></span>
+<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:           34778            34778         34778                     0</span></span>
+<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:           73933           349810       3722828                  3749</span></span>
+<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:           71284           362209       5009722                   782</span></span>
+<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:              NA               NA            NA                    NA</span></span>
+<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:           69352           219878        793862                   118</span></span>
+<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:           70348           164314        164314                     4</span></span>
+<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:           35081           111147        920404                   197</span></span>
+<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:              NA               NA            NA                    NA</span></span>
+<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:          109125           492246       2697002                  1005</span></span>
+<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:          101599           497058       4155534                 19585</span></span>
+<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:              NA               NA            NA                    NA</span></span>
+<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:          902538          5489677      40669503                 13228</span></span>
+<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:           67188           334236        334236                     2</span></span>
+<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:           80932           387650       1756795                  1316</span></span>
+<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:           80317           384410       2823521                   100</span></span>
+<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:           63822           306746       1076293                     0</span></span>
+<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:          109398           492083       1776063                    84</span></span>
+<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:           41103           191267        286721                   249</span></span>
+<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:           64752           335813       1529672                   120</span></span>
+<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:           84345           408873       1625516                  1861</span></span>
+<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:              NA               NA            NA                    NA</span></span>
+<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:           79816           298804        298804                     0</span></span>
+<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:          284997          1398282      12400055                  2344</span></span>
+<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:          127403           449411       1368899                 44779</span></span>
+<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:           82254          1046180       1778992                   252</span></span>
+<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:          104075           509300       3275810                 21627</span></span>
+<span id="cb9-182"><a href="#cb9-182" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:           82611           395369        655059                    57</span></span>
+<span id="cb9-183"><a href="#cb9-183" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:              NA               NA            NA                    NA</span></span>
+<span id="cb9-184"><a href="#cb9-184" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:          227698          1074197      28353243                 56136</span></span>
+<span id="cb9-185"><a href="#cb9-185" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:           81996           393019       3160153                     0</span></span>
+<span id="cb9-186"><a href="#cb9-186" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:           92726           402459        526405                 13816</span></span>
+<span id="cb9-187"><a href="#cb9-187" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     numExtrinsics7d numExtrinsics30d numExtrinsics numSignedExtrinsics7d</span></span>
+<span id="cb9-188"><a href="#cb9-188" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     numSignedExtrinsics30d numSignedExtrinsics numTransfers7d numTransfers30d</span></span>
+<span id="cb9-189"><a href="#cb9-189" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:                   1480               20506            429             705</span></span>
+<span id="cb9-190"><a href="#cb9-190" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:                      0                   0              0               0</span></span>
+<span id="cb9-191"><a href="#cb9-191" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:                   1048                1751            164             239</span></span>
+<span id="cb9-192"><a href="#cb9-192" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:                  20575              421737          56924          262815</span></span>
+<span id="cb9-193"><a href="#cb9-193" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:                    434                2835           2365           12863</span></span>
+<span id="cb9-194"><a href="#cb9-194" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:                   1952              126103            194            1206</span></span>
+<span id="cb9-195"><a href="#cb9-195" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:                    238                 442           2024            4593</span></span>
+<span id="cb9-196"><a href="#cb9-196" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:                     48                  48             12             405</span></span>
+<span id="cb9-197"><a href="#cb9-197" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:                    181                 335              0               0</span></span>
+<span id="cb9-198"><a href="#cb9-198" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:                      0                   0              0               0</span></span>
+<span id="cb9-199"><a href="#cb9-199" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:                   1022                5461            152             622</span></span>
+<span id="cb9-200"><a href="#cb9-200" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:                      0                   0              0               0</span></span>
+<span id="cb9-201"><a href="#cb9-201" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:                  60438             1085997          75894          322759</span></span>
+<span id="cb9-202"><a href="#cb9-202" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:                3311040            13887386          13671           61516</span></span>
+<span id="cb9-203"><a href="#cb9-203" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:                  20049              302968            651            2684</span></span>
+<span id="cb9-204"><a href="#cb9-204" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:                  37261              408145              0               0</span></span>
+<span id="cb9-205"><a href="#cb9-205" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:                 154636             4199129           8228           44274</span></span>
+<span id="cb9-206"><a href="#cb9-206" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:                     36                  36             10              11</span></span>
+<span id="cb9-207"><a href="#cb9-207" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:                    115                 528             18              18</span></span>
+<span id="cb9-208"><a href="#cb9-208" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:                   2135                5576              0               0</span></span>
+<span id="cb9-209"><a href="#cb9-209" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:                     NA                  NA             NA              NA</span></span>
+<span id="cb9-210"><a href="#cb9-210" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:                   1851            10974190          60579          296572</span></span>
+<span id="cb9-211"><a href="#cb9-211" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:                  59726             1647085          21888          108889</span></span>
+<span id="cb9-212"><a href="#cb9-212" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:                     17                  35              0              74</span></span>
+<span id="cb9-213"><a href="#cb9-213" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:                     20                  20              0               3</span></span>
+<span id="cb9-214"><a href="#cb9-214" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:                   5692               54973             NA            1668</span></span>
+<span id="cb9-215"><a href="#cb9-215" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:                 647338             3645540             38             223</span></span>
+<span id="cb9-216"><a href="#cb9-216" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:                    111                 114             14            1345</span></span>
+<span id="cb9-217"><a href="#cb9-217" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:                   5964              191764          40135          192264</span></span>
+<span id="cb9-218"><a href="#cb9-218" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:                      0                   0              0               0</span></span>
+<span id="cb9-219"><a href="#cb9-219" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:                   7042              106614            743            2457</span></span>
+<span id="cb9-220"><a href="#cb9-220" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:                  15716               81201          13936          127581</span></span>
+<span id="cb9-221"><a href="#cb9-221" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:                     NA                  NA             NA              NA</span></span>
+<span id="cb9-222"><a href="#cb9-222" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:                    270                7566              0              35</span></span>
+<span id="cb9-223"><a href="#cb9-223" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:                      8                   8              4               6</span></span>
+<span id="cb9-224"><a href="#cb9-224" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:                    461                2914             16              47</span></span>
+<span id="cb9-225"><a href="#cb9-225" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:                     NA                  NA             NA              NA</span></span>
+<span id="cb9-226"><a href="#cb9-226" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:                   7287                7304            190           24048</span></span>
+<span id="cb9-227"><a href="#cb9-227" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:                 103167             1218484          62883          308811</span></span>
+<span id="cb9-228"><a href="#cb9-228" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:                     NA                  NA             NA              NA</span></span>
+<span id="cb9-229"><a href="#cb9-229" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:                  57906             2148660          64427          312228</span></span>
+<span id="cb9-230"><a href="#cb9-230" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:                      2                   2              0               0</span></span>
+<span id="cb9-231"><a href="#cb9-231" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:                   6950               36211           1028            4619</span></span>
+<span id="cb9-232"><a href="#cb9-232" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:                    170                 662            114            1681</span></span>
+<span id="cb9-233"><a href="#cb9-233" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:                      0                   1              0               0</span></span>
+<span id="cb9-234"><a href="#cb9-234" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:                    404                 609              8              41</span></span>
+<span id="cb9-235"><a href="#cb9-235" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:                   1294                1995              0               0</span></span>
+<span id="cb9-236"><a href="#cb9-236" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:                    375                 444              0           34438</span></span>
+<span id="cb9-237"><a href="#cb9-237" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:                  12941               19740              0               0</span></span>
+<span id="cb9-238"><a href="#cb9-238" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:                     NA                  NA             NA              NA</span></span>
+<span id="cb9-239"><a href="#cb9-239" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:                      0                   0              0               0</span></span>
+<span id="cb9-240"><a href="#cb9-240" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:                   8728               91047          67969          337019</span></span>
+<span id="cb9-241"><a href="#cb9-241" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:                 135541              203557        1396820         6768326</span></span>
+<span id="cb9-242"><a href="#cb9-242" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:                 678026             1236290           1031          512813</span></span>
+<span id="cb9-243"><a href="#cb9-243" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:                 116966              452274          51087          250286</span></span>
+<span id="cb9-244"><a href="#cb9-244" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:                    305                 515              5              46</span></span>
+<span id="cb9-245"><a href="#cb9-245" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:                     NA                  NA             NA              NA</span></span>
+<span id="cb9-246"><a href="#cb9-246" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:                 251741             9879032          46460          207977</span></span>
+<span id="cb9-247"><a href="#cb9-247" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:                     22                 177              0               4</span></span>
+<span id="cb9-248"><a href="#cb9-248" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:                  25069               25071          12193           23163</span></span>
+<span id="cb9-249"><a href="#cb9-249" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     numSignedExtrinsics30d numSignedExtrinsics numTransfers7d numTransfers30d</span></span>
+<span id="cb9-250"><a href="#cb9-250" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     numTransfers numEvents7d numEvents30d numEvents valueTransfersUSD7d</span></span>
+<span id="cb9-251"><a href="#cb9-251" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:        19086       65324       265129   2705130        82794.493872</span></span>
+<span id="cb9-252"><a href="#cb9-252" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:            0       25552        25552     25552            0.000000</span></span>
+<span id="cb9-253"><a href="#cb9-253" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:         4574       35447       442892   4069977            0.000000</span></span>
+<span id="cb9-254"><a href="#cb9-254" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:      1475115      211522      1025374   9490752       362928.647378</span></span>
+<span id="cb9-255"><a href="#cb9-255" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:       102545       72661       306897   2534750            0.000000</span></span>
+<span id="cb9-256"><a href="#cb9-256" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:        76623       71284       348017   4063513       145086.220760</span></span>
+<span id="cb9-257"><a href="#cb9-257" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:        10364       61019       284938   1169215            2.713841</span></span>
+<span id="cb9-258"><a href="#cb9-258" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:          405       61201       301208    312297            0.000000</span></span>
+<span id="cb9-259"><a href="#cb9-259" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:           16       59731       291845   1871658            0.000000</span></span>
+<span id="cb9-260"><a href="#cb9-260" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:            0       47277        47277     47277            0.000000</span></span>
+<span id="cb9-261"><a href="#cb9-261" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:         3580       70839       348017   1312107        35310.508377</span></span>
+<span id="cb9-262"><a href="#cb9-262" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:            0       25352        25352     25352            0.000000</span></span>
+<span id="cb9-263"><a href="#cb9-263" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:      3631014      566632      2611499  25268506      6757290.391601</span></span>
+<span id="cb9-264"><a href="#cb9-264" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:       213142     7675654     36691021 148118144     13538853.954224</span></span>
+<span id="cb9-265"><a href="#cb9-265" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:        60711      231149      1162367   4879673        24967.736514</span></span>
+<span id="cb9-266"><a href="#cb9-266" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:            0      218445      1286745   7571416            0.000000</span></span>
+<span id="cb9-267"><a href="#cb9-267" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:      1792515     3385360     16095968 176700623     23304125.093090</span></span>
+<span id="cb9-268"><a href="#cb9-268" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:           11       68049       158759    158759            0.000000</span></span>
+<span id="cb9-269"><a href="#cb9-269" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:         3848       46576       279473   1327896         1727.620239</span></span>
+<span id="cb9-270"><a href="#cb9-270" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:            0       42382       205536    761233            0.000000</span></span>
+<span id="cb9-271"><a href="#cb9-271" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:           NA          NA           NA        NA                  NA</span></span>
+<span id="cb9-272"><a href="#cb9-272" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:      5351603     3585155     17507379 232274515     39418634.584643</span></span>
+<span id="cb9-273"><a href="#cb9-273" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:       668533      146474       734049   9821347      2252917.374294</span></span>
+<span id="cb9-274"><a href="#cb9-274" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:           74       63529       311318   1278019            0.000000</span></span>
+<span id="cb9-275"><a href="#cb9-275" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:            3       41234       197768    197768            0.000000</span></span>
+<span id="cb9-276"><a href="#cb9-276" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:        27944          NA       399884   2973789                  NA</span></span>
+<span id="cb9-277"><a href="#cb9-277" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:         6371      596522      2863324  18146662        26153.500149</span></span>
+<span id="cb9-278"><a href="#cb9-278" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:         1346       66901       330672    342695            0.000000</span></span>
+<span id="cb9-279"><a href="#cb9-279" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:      4080345      425329      1661585  36786780       996716.602583</span></span>
+<span id="cb9-280"><a href="#cb9-280" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:            0       34787        34787     34787            0.000000</span></span>
+<span id="cb9-281"><a href="#cb9-281" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:        63962     2694692     12991663  93493800      1467508.950537</span></span>
+<span id="cb9-282"><a href="#cb9-282" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:       837523       91992       888080   6666090      3697975.987844</span></span>
+<span id="cb9-283"><a href="#cb9-283" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:           NA          NA           NA        NA                  NA</span></span>
+<span id="cb9-284"><a href="#cb9-284" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:        44806       69505       220405    959015            0.000000</span></span>
+<span id="cb9-285"><a href="#cb9-285" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:            6       71089       166036    166036            0.000000</span></span>
+<span id="cb9-286"><a href="#cb9-286" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:         1605       66450       176032   1074026            0.000000</span></span>
+<span id="cb9-287"><a href="#cb9-287" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:           NA          NA           NA        NA                  NA</span></span>
+<span id="cb9-288"><a href="#cb9-288" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:        24049     1095318      3152833   5847756            0.000000</span></span>
+<span id="cb9-289"><a href="#cb9-289" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:      2466993      506047      2464735  18631162     15421627.132031</span></span>
+<span id="cb9-290"><a href="#cb9-290" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:           NA          NA           NA        NA                  NA</span></span>
+<span id="cb9-291"><a href="#cb9-291" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:      4279870     5035962     30441488 235461512     32031611.534719</span></span>
+<span id="cb9-292"><a href="#cb9-292" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:            0       67216       334351    334351            0.000000</span></span>
+<span id="cb9-293"><a href="#cb9-293" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:        41362       86029       412673   2007313      2087641.721983</span></span>
+<span id="cb9-294"><a href="#cb9-294" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:         6574       89283       428002   2936108       228589.991868</span></span>
+<span id="cb9-295"><a href="#cb9-295" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:            0       63840       306840   1076628            0.000000</span></span>
+<span id="cb9-296"><a href="#cb9-296" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:           58      109757       496241   1782814       253418.021167</span></span>
+<span id="cb9-297"><a href="#cb9-297" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:            0       41961       195787    296571            0.000000</span></span>
+<span id="cb9-298"><a href="#cb9-298" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:        34465       98941       689310   2080097            0.000000</span></span>
+<span id="cb9-299"><a href="#cb9-299" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:            0      217807      1069510   3658553            0.000000</span></span>
+<span id="cb9-300"><a href="#cb9-300" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:           NA          NA           NA        NA                  NA</span></span>
+<span id="cb9-301"><a href="#cb9-301" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:            0       79838       298896    298896            0.000000</span></span>
+<span id="cb9-302"><a href="#cb9-302" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:      3398952     2935917     14150553 118474506     85894481.371014</span></span>
+<span id="cb9-303"><a href="#cb9-303" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:     13550329     3370366     17668366  45352267            0.000000</span></span>
+<span id="cb9-304"><a href="#cb9-304" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:       931692       85102      2586275   4296285            0.000000</span></span>
+<span id="cb9-305"><a href="#cb9-305" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:      1055890      266828      1352840   7038569      4866248.180756</span></span>
+<span id="cb9-306"><a href="#cb9-306" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:         4948       82877       396789    674817           17.071483</span></span>
+<span id="cb9-307"><a href="#cb9-307" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:           NA          NA           NA        NA                  NA</span></span>
+<span id="cb9-308"><a href="#cb9-308" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:      8056830     2238166     10599572 124709437    293212812.560726</span></span>
+<span id="cb9-309"><a href="#cb9-309" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:           43       82025       393378   3162085            0.000000</span></span>
+<span id="cb9-310"><a href="#cb9-310" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:        23163      170397       559234    690626            0.000000</span></span>
+<span id="cb9-311"><a href="#cb9-311" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     numTransfers numEvents7d numEvents30d numEvents valueTransfersUSD7d</span></span>
+<span id="cb9-312"><a href="#cb9-312" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     valueTransfersUSD30d  valueTransfersUSD numHolders relayChain</span></span>
+<span id="cb9-313"><a href="#cb9-313" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:         126221.80619     16884973.08230      23619     kusama</span></span>
+<span id="cb9-314"><a href="#cb9-314" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:              0.00000            0.00000          0     kusama</span></span>
+<span id="cb9-315"><a href="#cb9-315" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:              0.00000            0.00000       4976     kusama</span></span>
+<span id="cb9-316"><a href="#cb9-316" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:        1639632.18191    217633637.18019      29890     kusama</span></span>
+<span id="cb9-317"><a href="#cb9-317" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:              0.00000            0.00000      16800     kusama</span></span>
+<span id="cb9-318"><a href="#cb9-318" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:         964346.88384    146601710.40928      26755     kusama</span></span>
+<span id="cb9-319"><a href="#cb9-319" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:             22.67008           96.11858         34     kusama</span></span>
+<span id="cb9-320"><a href="#cb9-320" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:              0.00000            0.00000        366     kusama</span></span>
+<span id="cb9-321"><a href="#cb9-321" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:              0.00000           50.46790         21     kusama</span></span>
+<span id="cb9-322"><a href="#cb9-322" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:              0.00000            0.00000          0     kusama</span></span>
+<span id="cb9-323"><a href="#cb9-323" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:         176050.53906      1794413.48416      11531     kusama</span></span>
+<span id="cb9-324"><a href="#cb9-324" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:              0.00000            0.00000          0     kusama</span></span>
+<span id="cb9-325"><a href="#cb9-325" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:       43415804.67424   1604166979.73064      98297     kusama</span></span>
+<span id="cb9-326"><a href="#cb9-326" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:       55695063.91555    456298067.30267       8529     kusama</span></span>
+<span id="cb9-327"><a href="#cb9-327" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:          73751.91856       966497.65543       1118     kusama</span></span>
+<span id="cb9-328"><a href="#cb9-328" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:              0.00000            0.00000       7635     kusama</span></span>
+<span id="cb9-329"><a href="#cb9-329" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:       97746354.78961  13056724748.23656     339215     kusama</span></span>
+<span id="cb9-330"><a href="#cb9-330" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:              0.00000            0.00000          0     kusama</span></span>
+<span id="cb9-331"><a href="#cb9-331" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:           1727.62024       544733.88062       3820     kusama</span></span>
+<span id="cb9-332"><a href="#cb9-332" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:              0.00000            0.00000         98     kusama</span></span>
+<span id="cb9-333"><a href="#cb9-333" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:                   NA                 NA          0     kusama</span></span>
+<span id="cb9-334"><a href="#cb9-334" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:      218047930.86880   4105044835.53549     633412     kusama</span></span>
+<span id="cb9-335"><a href="#cb9-335" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:        8943645.29677    105627488.07842      12580     kusama</span></span>
+<span id="cb9-336"><a href="#cb9-336" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:              0.00000            0.00000         13     kusama</span></span>
+<span id="cb9-337"><a href="#cb9-337" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:              0.00000            0.00000          5     kusama</span></span>
+<span id="cb9-338"><a href="#cb9-338" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:          85699.88469     28291856.92087      11952     kusama</span></span>
+<span id="cb9-339"><a href="#cb9-339" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:         207906.26311      7412252.63579       1125     kusama</span></span>
+<span id="cb9-340"><a href="#cb9-340" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:              0.00000            0.00000       1333     kusama</span></span>
+<span id="cb9-341"><a href="#cb9-341" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:        4457231.59242    213802629.44451     992130     kusama</span></span>
+<span id="cb9-342"><a href="#cb9-342" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:              0.00000            0.00000          0     kusama</span></span>
+<span id="cb9-343"><a href="#cb9-343" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:        8181350.77386    209123118.30646       9180     kusama</span></span>
+<span id="cb9-344"><a href="#cb9-344" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:       31453862.74117    331864768.18348      79937     kusama</span></span>
+<span id="cb9-345"><a href="#cb9-345" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:                   NA                 NA          0     kusama</span></span>
+<span id="cb9-346"><a href="#cb9-346" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:              0.00000            0.00000      33745     kusama</span></span>
+<span id="cb9-347"><a href="#cb9-347" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:              0.00000            0.00000          0     kusama</span></span>
+<span id="cb9-348"><a href="#cb9-348" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:              0.00000            0.00000        420     kusama</span></span>
+<span id="cb9-349"><a href="#cb9-349" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:                   NA                 NA          0     kusama</span></span>
+<span id="cb9-350"><a href="#cb9-350" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:              0.00000            0.00000      14236     kusama</span></span>
+<span id="cb9-351"><a href="#cb9-351" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:       67682992.18222   1780186934.03199     177053   polkadot</span></span>
+<span id="cb9-352"><a href="#cb9-352" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:                   NA                 NA          0   polkadot</span></span>
+<span id="cb9-353"><a href="#cb9-353" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:      171423881.43797   3629761517.02003     492841   polkadot</span></span>
+<span id="cb9-354"><a href="#cb9-354" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:              0.00000            0.00000          1   polkadot</span></span>
+<span id="cb9-355"><a href="#cb9-355" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:       15939005.60523     66342830.03364      42612   polkadot</span></span>
+<span id="cb9-356"><a href="#cb9-356" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:        1702040.42613      8707910.41612       6410   polkadot</span></span>
+<span id="cb9-357"><a href="#cb9-357" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:              0.00000            0.00000          1   polkadot</span></span>
+<span id="cb9-358"><a href="#cb9-358" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:         254878.44474       255093.62036       2797   polkadot</span></span>
+<span id="cb9-359"><a href="#cb9-359" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:              0.00000            0.00000       1114   polkadot</span></span>
+<span id="cb9-360"><a href="#cb9-360" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:              0.00000            0.00000      21122   polkadot</span></span>
+<span id="cb9-361"><a href="#cb9-361" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:              0.00000            0.00000       7938   polkadot</span></span>
+<span id="cb9-362"><a href="#cb9-362" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:                   NA                 NA          0   polkadot</span></span>
+<span id="cb9-363"><a href="#cb9-363" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:              0.00000            0.00000          0   polkadot</span></span>
+<span id="cb9-364"><a href="#cb9-364" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:      477727070.30673   5530376310.36540     278513   polkadot</span></span>
+<span id="cb9-365"><a href="#cb9-365" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:              0.00000            0.00000     271131   polkadot</span></span>
+<span id="cb9-366"><a href="#cb9-366" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:              0.00000            0.00000       2786   polkadot</span></span>
+<span id="cb9-367"><a href="#cb9-367" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:       48251605.50385    544983564.11981      40190   polkadot</span></span>
+<span id="cb9-368"><a href="#cb9-368" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:            793.92838      1998956.48523       2495   polkadot</span></span>
+<span id="cb9-369"><a href="#cb9-369" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:                   NA                 NA          0   polkadot</span></span>
+<span id="cb9-370"><a href="#cb9-370" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:     1594679162.49383 155104208195.78540    2141851   polkadot</span></span>
+<span id="cb9-371"><a href="#cb9-371" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:             12.71764         7140.28477         61   polkadot</span></span>
+<span id="cb9-372"><a href="#cb9-372" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:              0.00000            0.00000          0   polkadot</span></span>
+<span id="cb9-373"><a href="#cb9-373" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;     valueTransfersUSD30d  valueTransfersUSD numHolders relayChain</span></span>
+<span id="cb9-374"><a href="#cb9-374" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;       totalIssuance isEVM blocksCovered blocksFinalized</span></span>
+<span id="cb9-375"><a href="#cb9-375" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:       472866080     0       1249463         1249460</span></span>
+<span id="cb9-376"><a href="#cb9-376" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:               0     0        111116          111113</span></span>
+<span id="cb9-377"><a href="#cb9-377" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:               0     0       1502533         1502531</span></span>
+<span id="cb9-378"><a href="#cb9-378" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:        80000000     0       2134259         2134256</span></span>
+<span id="cb9-379"><a href="#cb9-379" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5: 100000000376832     0       1157944         1157941</span></span>
+<span id="cb9-380"><a href="#cb9-380" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:     10000000000     0       1740133         1740131</span></span>
+<span id="cb9-381"><a href="#cb9-381" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:               0     0        578510          578508</span></span>
+<span id="cb9-382"><a href="#cb9-382" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:               0     0        261935          261932</span></span>
+<span id="cb9-383"><a href="#cb9-383" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:               0     0        936888          936886</span></span>
+<span id="cb9-384"><a href="#cb9-384" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:               0     0        135924          135922</span></span>
+<span id="cb9-385"><a href="#cb9-385" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:               0     0        625883          625880</span></span>
+<span id="cb9-386"><a href="#cb9-386" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:               0     0        127926          127922</span></span>
+<span id="cb9-387"><a href="#cb9-387" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:       100000000     0       2302666         2302663</span></span>
+<span id="cb9-388"><a href="#cb9-388" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:       265999984     0       2001013         2001010</span></span>
+<span id="cb9-389"><a href="#cb9-389" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:               0     0        632049          632047</span></span>
+<span id="cb9-390"><a href="#cb9-390" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:               0     0       1172447         1172447</span></span>
+<span id="cb9-391"><a href="#cb9-391" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:        12004426     0      13636518        13636513</span></span>
+<span id="cb9-392"><a href="#cb9-392" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:               0     0        129405          129402</span></span>
+<span id="cb9-393"><a href="#cb9-393" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:               0     0        654432          654432</span></span>
+<span id="cb9-394"><a href="#cb9-394" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:               0     0        414235          414188</span></span>
+<span id="cb9-395"><a href="#cb9-395" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:               0     0            NA              NA</span></span>
+<span id="cb9-396"><a href="#cb9-396" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:        10268673     1       2231137         2231134</span></span>
+<span id="cb9-397"><a href="#cb9-397" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:      1000000000     0       1583004         1583004</span></span>
+<span id="cb9-398"><a href="#cb9-398" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:         1152941     0        638870          638867</span></span>
+<span id="cb9-399"><a href="#cb9-399" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:               0     0         99678           99677</span></span>
+<span id="cb9-400"><a href="#cb9-400" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:   1017676234752     0       1161532         1161527</span></span>
+<span id="cb9-401"><a href="#cb9-401" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:          731212     0       1061597         1061594</span></span>
+<span id="cb9-402"><a href="#cb9-402" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:               0     0        966928          966925</span></span>
+<span id="cb9-403"><a href="#cb9-403" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:  72242146836480     1       1982923         1982920</span></span>
+<span id="cb9-404"><a href="#cb9-404" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:               0     0            NA           40982</span></span>
+<span id="cb9-405"><a href="#cb9-405" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:          152227     0       1804313         1804310</span></span>
+<span id="cb9-406"><a href="#cb9-406" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:            1026     0       2497768         2497765</span></span>
+<span id="cb9-407"><a href="#cb9-407" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:               0     0            NA              NA</span></span>
+<span id="cb9-408"><a href="#cb9-408" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:               0     0        847261          847258</span></span>
+<span id="cb9-409"><a href="#cb9-409" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:               0     0        131711          131708</span></span>
+<span id="cb9-410"><a href="#cb9-410" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:               0     0        574282          574279</span></span>
+<span id="cb9-411"><a href="#cb9-411" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:               0     0            NA              NA</span></span>
+<span id="cb9-412"><a href="#cb9-412" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:               0     0        941666          941663</span></span>
+<span id="cb9-413"><a href="#cb9-413" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:      1000000000     0       1466801         1466797</span></span>
+<span id="cb9-414"><a href="#cb9-414" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:               0     0            NA              NA</span></span>
+<span id="cb9-415"><a href="#cb9-415" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:      7108140544     1       1470574         1470614</span></span>
+<span id="cb9-416"><a href="#cb9-416" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:               0     0        299217          299217</span></span>
+<span id="cb9-417"><a href="#cb9-417" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:               0     0        860675          860671</span></span>
+<span id="cb9-418"><a href="#cb9-418" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:            4047     1       1397192         1397188</span></span>
+<span id="cb9-419"><a href="#cb9-419" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:               0     0        550012          550009</span></span>
+<span id="cb9-420"><a href="#cb9-420" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:               0     0        832120          832116</span></span>
+<span id="cb9-421"><a href="#cb9-421" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:               0     0        385549          385546</span></span>
+<span id="cb9-422"><a href="#cb9-422" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:               0     0        764919          764916</span></span>
+<span id="cb9-423"><a href="#cb9-423" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:               0     0        803090          803086</span></span>
+<span id="cb9-424"><a href="#cb9-424" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:               0     0       1521070         1521067</span></span>
+<span id="cb9-425"><a href="#cb9-425" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:               0     0        243466          243464</span></span>
+<span id="cb9-426"><a href="#cb9-426" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:      1008444352     1       1475622         1475618</span></span>
+<span id="cb9-427"><a href="#cb9-427" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:               0     0        582873          582869</span></span>
+<span id="cb9-428"><a href="#cb9-428" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:               0     0        306235          306232</span></span>
+<span id="cb9-429"><a href="#cb9-429" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:     10000000000     0       1413656         1413653</span></span>
+<span id="cb9-430"><a href="#cb9-430" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:               0     0        423515          423511</span></span>
+<span id="cb9-431"><a href="#cb9-431" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:               0     0       2043118         2043115</span></span>
+<span id="cb9-432"><a href="#cb9-432" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:      1167630208     0      11238142        11238137</span></span>
+<span id="cb9-433"><a href="#cb9-433" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:               0     0       1732824         1732821</span></span>
+<span id="cb9-434"><a href="#cb9-434" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:               0     0        256070          256070</span></span>
+<span id="cb9-435"><a href="#cb9-435" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;       totalIssuance isEVM blocksCovered blocksFinalized</span></span>
+<span id="cb9-436"><a href="#cb9-436" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                crawlingStatus</span></span>
+<span id="cb9-437"><a href="#cb9-437" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:                                                          </span></span>
+<span id="cb9-438"><a href="#cb9-438" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:                             Only partial index available.</span></span>
+<span id="cb9-439"><a href="#cb9-439" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:                                                          </span></span>
+<span id="cb9-440"><a href="#cb9-440" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:                                                          </span></span>
+<span id="cb9-441"><a href="#cb9-441" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:                                                          </span></span>
+<span id="cb9-442"><a href="#cb9-442" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:                                                          </span></span>
+<span id="cb9-443"><a href="#cb9-443" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:                                                          </span></span>
+<span id="cb9-444"><a href="#cb9-444" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:                                                          </span></span>
+<span id="cb9-445"><a href="#cb9-445" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:                                                          </span></span>
+<span id="cb9-446"><a href="#cb9-446" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:                                                          </span></span>
+<span id="cb9-447"><a href="#cb9-447" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:                                                          </span></span>
+<span id="cb9-448"><a href="#cb9-448" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:                                                          </span></span>
+<span id="cb9-449"><a href="#cb9-449" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:                                                          </span></span>
+<span id="cb9-450"><a href="#cb9-450" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:                                                          </span></span>
+<span id="cb9-451"><a href="#cb9-451" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:                                                          </span></span>
+<span id="cb9-452"><a href="#cb9-452" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:                                                          </span></span>
+<span id="cb9-453"><a href="#cb9-453" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:                                                          </span></span>
+<span id="cb9-454"><a href="#cb9-454" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:                             Only partial index available.</span></span>
+<span id="cb9-455"><a href="#cb9-455" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:                                                          </span></span>
+<span id="cb9-456"><a href="#cb9-456" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:                             Only partial index available.</span></span>
+<span id="cb9-457"><a href="#cb9-457" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:                   Websocket endpoint not producing blocks</span></span>
+<span id="cb9-458"><a href="#cb9-458" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:                                                          </span></span>
+<span id="cb9-459"><a href="#cb9-459" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:                                                          </span></span>
+<span id="cb9-460"><a href="#cb9-460" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:                                                          </span></span>
+<span id="cb9-461"><a href="#cb9-461" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:                                                          </span></span>
+<span id="cb9-462"><a href="#cb9-462" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:                                                          </span></span>
+<span id="cb9-463"><a href="#cb9-463" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:                                                          </span></span>
+<span id="cb9-464"><a href="#cb9-464" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:                             Only partial index available.</span></span>
+<span id="cb9-465"><a href="#cb9-465" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:                                                          </span></span>
+<span id="cb9-466"><a href="#cb9-466" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:                                                          </span></span>
+<span id="cb9-467"><a href="#cb9-467" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:                                                          </span></span>
+<span id="cb9-468"><a href="#cb9-468" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:                                                          </span></span>
+<span id="cb9-469"><a href="#cb9-469" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:                   Websocket endpoint not producing blocks</span></span>
+<span id="cb9-470"><a href="#cb9-470" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:                             Only partial index available.</span></span>
+<span id="cb9-471"><a href="#cb9-471" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:                             Only partial index available.</span></span>
+<span id="cb9-472"><a href="#cb9-472" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:                                                          </span></span>
+<span id="cb9-473"><a href="#cb9-473" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37: No Public Websocket Endpoint available: Not indexing yet.</span></span>
+<span id="cb9-474"><a href="#cb9-474" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:                                                          </span></span>
+<span id="cb9-475"><a href="#cb9-475" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:                                                          </span></span>
+<span id="cb9-476"><a href="#cb9-476" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40: No Public Websocket Endpoint available: Not indexing yet.</span></span>
+<span id="cb9-477"><a href="#cb9-477" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:                                                          </span></span>
+<span id="cb9-478"><a href="#cb9-478" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:                             Only partial index available.</span></span>
+<span id="cb9-479"><a href="#cb9-479" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:                                                          </span></span>
+<span id="cb9-480"><a href="#cb9-480" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:                                                          </span></span>
+<span id="cb9-481"><a href="#cb9-481" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:                                                          </span></span>
+<span id="cb9-482"><a href="#cb9-482" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:                             Only partial index available.</span></span>
+<span id="cb9-483"><a href="#cb9-483" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:                                                          </span></span>
+<span id="cb9-484"><a href="#cb9-484" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:                                                          </span></span>
+<span id="cb9-485"><a href="#cb9-485" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:                                                          </span></span>
+<span id="cb9-486"><a href="#cb9-486" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:                   Websocket endpoint not producing blocks</span></span>
+<span id="cb9-487"><a href="#cb9-487" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:                                                          </span></span>
+<span id="cb9-488"><a href="#cb9-488" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:                                                          </span></span>
+<span id="cb9-489"><a href="#cb9-489" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:                                                          </span></span>
+<span id="cb9-490"><a href="#cb9-490" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:                             Only partial index available.</span></span>
+<span id="cb9-491"><a href="#cb9-491" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:                                                          </span></span>
+<span id="cb9-492"><a href="#cb9-492" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:                                                          </span></span>
+<span id="cb9-493"><a href="#cb9-493" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57: No Public Websocket Endpoint available: Not indexing yet.</span></span>
+<span id="cb9-494"><a href="#cb9-494" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:                                                          </span></span>
+<span id="cb9-495"><a href="#cb9-495" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:                                                          </span></span>
+<span id="cb9-496"><a href="#cb9-496" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:                                                          </span></span>
+<span id="cb9-497"><a href="#cb9-497" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                crawlingStatus</span></span>
+<span id="cb9-498"><a href="#cb9-498" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                               githubURL</span></span>
+<span id="cb9-499"><a href="#cb9-499" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:                      https://github.com/centrifuge/centrifuge-chain</span></span>
+<span id="cb9-500"><a href="#cb9-500" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:                                   https://github.com/ajuna-network/</span></span>
+<span id="cb9-501"><a href="#cb9-501" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:                    https://github.com/galacticcouncil/Basilisk-node</span></span>
+<span id="cb9-502"><a href="#cb9-502" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:                          https://github.com/bifrost-finance/bifrost</span></span>
+<span id="cb9-503"><a href="#cb9-503" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:                    https://github.com/bit-country/Metaverse-Network</span></span>
+<span id="cb9-504"><a href="#cb9-504" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:                              https://github.com/Manta-Network/Manta</span></span>
+<span id="cb9-505"><a href="#cb9-505" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7: https://github.com/darwinia-network/darwinia/tree/main/runtime/crab</span></span>
+<span id="cb9-506"><a href="#cb9-506" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:                     https://github.com/DoraFactory/dorafactory-node</span></span>
+<span id="cb9-507"><a href="#cb9-507" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:                    https://github.com/encointer/encointer-parachain</span></span>
+<span id="cb9-508"><a href="#cb9-508" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:                               https://github.com/ImbueNetwork/imbue</span></span>
+<span id="cb9-509"><a href="#cb9-509" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:                     https://github.com/integritee-network/parachain</span></span>
+<span id="cb9-510"><a href="#cb9-510" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:                 https://github.com/Kabocha-Network/kabocha-node-old</span></span>
+<span id="cb9-511"><a href="#cb9-511" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:                      https://github.com/AcalaNetwork/Acala/releases</span></span>
+<span id="cb9-512"><a href="#cb9-512" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:                    https://github.com/Phala-Network/khala-parachain</span></span>
+<span id="cb9-513"><a href="#cb9-513" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:                             https://github.com/DICO-TEAM/dico-chain</span></span>
+<span id="cb9-514"><a href="#cb9-514" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:                                         https://github.com/interlay</span></span>
+<span id="cb9-515"><a href="#cb9-515" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:                     https://github.com/paritytech/polkadot/releases</span></span>
+<span id="cb9-516"><a href="#cb9-516" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:                  https://github.com/listenofficial/listen-parachain</span></span>
+<span id="cb9-517"><a href="#cb9-517" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:                      https://github.com/litentry/litentry-parachain</span></span>
+<span id="cb9-518"><a href="#cb9-518" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:                     https://github.com/mangata-finance/mangata-node</span></span>
+<span id="cb9-519"><a href="#cb9-519" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:                               https://github.com/aresprotocols/mars</span></span>
+<span id="cb9-520"><a href="#cb9-520" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:                      https://github.com/PureStake/moonbeam/releases</span></span>
+<span id="cb9-521"><a href="#cb9-521" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:                        https://github.com/parallel-finance/parallel</span></span>
+<span id="cb9-522"><a href="#cb9-522" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:                          https://github.com/composablefi/composable</span></span>
+<span id="cb9-523"><a href="#cb9-523" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:                     https://github.com/Kylin-Network/kylin-collator</span></span>
+<span id="cb9-524"><a href="#cb9-524" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:                       https://github.com/UniqueNetwork/unique-chain</span></span>
+<span id="cb9-525"><a href="#cb9-525" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:                               https://github.com/airalab/robonomics</span></span>
+<span id="cb9-526"><a href="#cb9-526" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:                                    https://github.com/crustio/crust</span></span>
+<span id="cb9-527"><a href="#cb9-527" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:                               https://github.com/PlasmNetwork/Astar</span></span>
+<span id="cb9-528"><a href="#cb9-528" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:                                         https://github.com/sora-xor</span></span>
+<span id="cb9-529"><a href="#cb9-529" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:                                     https://github.com/KILTprotocol</span></span>
+<span id="cb9-530"><a href="#cb9-530" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:                               https://github.com/paritytech/cumulus</span></span>
+<span id="cb9-531"><a href="#cb9-531" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:                  https://github.com/SubGame-Network/subgame-network</span></span>
+<span id="cb9-532"><a href="#cb9-532" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:                         https://github.com/dappforce/subsocial-node</span></span>
+<span id="cb9-533"><a href="#cb9-533" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:            https://github.com/DataHighway-DHX/DataHighway-Parachain</span></span>
+<span id="cb9-534"><a href="#cb9-534" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:      https://github.com/OAK-Foundation/OAK-blockchain#live-networks</span></span>
+<span id="cb9-535"><a href="#cb9-535" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:              https://github.com/digitalnativeinc/standard-substrate</span></span>
+<span id="cb9-536"><a href="#cb9-536" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:                            https://github.com/zeitgeistpm/zeitgeist</span></span>
+<span id="cb9-537"><a href="#cb9-537" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:                      https://github.com/AcalaNetwork/Acala/releases</span></span>
+<span id="cb9-538"><a href="#cb9-538" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:                               https://github.com/aresprotocols/mars</span></span>
+<span id="cb9-539"><a href="#cb9-539" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:                               https://github.com/PlasmNetwork/Astar</span></span>
+<span id="cb9-540"><a href="#cb9-540" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:                          https://github.com/bifrost-finance/bifrost</span></span>
+<span id="cb9-541"><a href="#cb9-541" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:                      https://github.com/centrifuge/centrifuge-chain</span></span>
+<span id="cb9-542"><a href="#cb9-542" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:                            https://github.com/clover-network/clover</span></span>
+<span id="cb9-543"><a href="#cb9-543" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:                          https://github.com/ComposableFi/composable</span></span>
+<span id="cb9-544"><a href="#cb9-544" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:                                                                &lt;NA&gt;</span></span>
+<span id="cb9-545"><a href="#cb9-545" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:    https://github.com/equilibrium-eosdt/equilibrium-substrate-chain</span></span>
+<span id="cb9-546"><a href="#cb9-546" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:                     https://github.com/galacticcouncil/HydraDX-node</span></span>
+<span id="cb9-547"><a href="#cb9-547" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:                                         https://github.com/interlay</span></span>
+<span id="cb9-548"><a href="#cb9-548" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:                      https://github.com/totem-tech/totem-parachains</span></span>
+<span id="cb9-549"><a href="#cb9-549" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:                      https://github.com/litentry/litentry-parachain</span></span>
+<span id="cb9-550"><a href="#cb9-550" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:                      https://github.com/PureStake/moonbeam/releases</span></span>
+<span id="cb9-551"><a href="#cb9-551" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:                                  https://github.com/NodleCode/chain</span></span>
+<span id="cb9-552"><a href="#cb9-552" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:                https://github.com/OriginTrail/origintrail-parachain</span></span>
+<span id="cb9-553"><a href="#cb9-553" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:                        https://github.com/parallel-finance/parallel</span></span>
+<span id="cb9-554"><a href="#cb9-554" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:                    https://github.com/Phala-Network/khala-parachain</span></span>
+<span id="cb9-555"><a href="#cb9-555" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:                      https://github.com/Polkadex-Substrate/Polkadex</span></span>
+<span id="cb9-556"><a href="#cb9-556" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:                     https://github.com/paritytech/polkadot/releases</span></span>
+<span id="cb9-557"><a href="#cb9-557" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:                             https://github.com/paritytech/statemint</span></span>
+<span id="cb9-558"><a href="#cb9-558" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:                       https://github.com/UniqueNetwork/unique-chain</span></span>
+<span id="cb9-559"><a href="#cb9-559" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                               githubURL</span></span>
+<span id="cb9-560"><a href="#cb9-560" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                       substrateURL</span></span>
+<span id="cb9-561"><a href="#cb9-561" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:          https://marketplace.substrate.io/projects/centrifuge/</span></span>
+<span id="cb9-562"><a href="#cb9-562" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:       https://marketplace.substrate.io/projects/ajuna-network/</span></span>
+<span id="cb9-563"><a href="#cb9-563" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-564"><a href="#cb9-564" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:             https://marketplace.substrate.io/projects/bifrost/</span></span>
+<span id="cb9-565"><a href="#cb9-565" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:          https://marketplace.substrate.io/projects/bitcountry/</span></span>
+<span id="cb9-566"><a href="#cb9-566" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:       https://marketplace.substrate.io/projects/manta-network/</span></span>
+<span id="cb9-567"><a href="#cb9-567" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:            https://marketplace.substrate.io/projects/darwinia/</span></span>
+<span id="cb9-568"><a href="#cb9-568" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:        https://marketplace.substrate.io/projects/dora-factory/</span></span>
+<span id="cb9-569"><a href="#cb9-569" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:           https://marketplace.substrate.io/projects/encointer/</span></span>
+<span id="cb9-570"><a href="#cb9-570" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-571"><a href="#cb9-571" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:          https://marketplace.substrate.io/projects/integritee/</span></span>
+<span id="cb9-572"><a href="#cb9-572" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-573"><a href="#cb9-573" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:       https://marketplace.substrate.io/projects/acala-network/</span></span>
+<span id="cb9-574"><a href="#cb9-574" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:       https://marketplace.substrate.io/projects/phala-network/</span></span>
+<span id="cb9-575"><a href="#cb9-575" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-576"><a href="#cb9-576" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:            https://marketplace.substrate.io/projects/interlay/</span></span>
+<span id="cb9-577"><a href="#cb9-577" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:      https://marketplace.substrate.io/projects/kusama-network/</span></span>
+<span id="cb9-578"><a href="#cb9-578" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-579"><a href="#cb9-579" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:            https://marketplace.substrate.io/projects/litentry/</span></span>
+<span id="cb9-580"><a href="#cb9-580" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:             https://marketplace.substrate.io/projects/mangata/</span></span>
+<span id="cb9-581"><a href="#cb9-581" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-582"><a href="#cb9-582" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:            https://marketplace.substrate.io/projects/moonbeam/</span></span>
+<span id="cb9-583"><a href="#cb9-583" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:    https://marketplace.substrate.io/projects/parallel-finance/</span></span>
+<span id="cb9-584"><a href="#cb9-584" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-585"><a href="#cb9-585" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:       https://marketplace.substrate.io/projects/kylin-network/</span></span>
+<span id="cb9-586"><a href="#cb9-586" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:      https://marketplace.substrate.io/projects/unique-network/</span></span>
+<span id="cb9-587"><a href="#cb9-587" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27: https://marketplace.substrate.io/projects/robonomics-airalabs/</span></span>
+<span id="cb9-588"><a href="#cb9-588" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:       https://marketplace.substrate.io/projects/crust-network/</span></span>
+<span id="cb9-589"><a href="#cb9-589" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:       https://marketplace.substrate.io/projects/astar-network/</span></span>
+<span id="cb9-590"><a href="#cb9-590" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-591"><a href="#cb9-591" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:       https://marketplace.substrate.io/projects/kilt-protocol/</span></span>
+<span id="cb9-592"><a href="#cb9-592" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:      https://marketplace.substrate.io/projects/kusama-network/</span></span>
+<span id="cb9-593"><a href="#cb9-593" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-594"><a href="#cb9-594" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:           https://marketplace.substrate.io/projects/subsocial/</span></span>
+<span id="cb9-595"><a href="#cb9-595" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:        https://marketplace.substrate.io/projects/data-highway/</span></span>
+<span id="cb9-596"><a href="#cb9-596" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-597"><a href="#cb9-597" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-598"><a href="#cb9-598" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-599"><a href="#cb9-599" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:       https://marketplace.substrate.io/projects/acala-network/</span></span>
+<span id="cb9-600"><a href="#cb9-600" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-601"><a href="#cb9-601" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:       https://marketplace.substrate.io/projects/astar-network/</span></span>
+<span id="cb9-602"><a href="#cb9-602" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:             https://marketplace.substrate.io/projects/bifrost/</span></span>
+<span id="cb9-603"><a href="#cb9-603" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:          https://marketplace.substrate.io/projects/centrifuge/</span></span>
+<span id="cb9-604"><a href="#cb9-604" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-605"><a href="#cb9-605" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:                                                           &lt;NA&gt;</span></span>
+<span id="cb9-606"><a href="#cb9-606" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:               https://marketplace.substrate.io/projects/enjin/</span></span>
+<span id="cb9-607"><a href="#cb9-607" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:         https://marketplace.substrate.io/projects/equilibrium/</span></span>
+<span id="cb9-608"><a href="#cb9-608" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:             https://marketplace.substrate.io/projects/hydradx/</span></span>
+<span id="cb9-609"><a href="#cb9-609" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:            https://marketplace.substrate.io/projects/interlay/</span></span>
+<span id="cb9-610"><a href="#cb9-610" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:    https://marketplace.substrate.io/projects/totem-accounting/</span></span>
+<span id="cb9-611"><a href="#cb9-611" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:            https://marketplace.substrate.io/projects/litentry/</span></span>
+<span id="cb9-612"><a href="#cb9-612" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:            https://marketplace.substrate.io/projects/moonbeam/</span></span>
+<span id="cb9-613"><a href="#cb9-613" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:               https://marketplace.substrate.io/projects/nodle/</span></span>
+<span id="cb9-614"><a href="#cb9-614" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:        https://marketplace.substrate.io/projects/origin-trail/</span></span>
+<span id="cb9-615"><a href="#cb9-615" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:    https://marketplace.substrate.io/projects/parallel-finance/</span></span>
+<span id="cb9-616"><a href="#cb9-616" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:       https://marketplace.substrate.io/projects/phala-network/</span></span>
+<span id="cb9-617"><a href="#cb9-617" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:            https://marketplace.substrate.io/projects/polkadex/</span></span>
+<span id="cb9-618"><a href="#cb9-618" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:    https://marketplace.substrate.io/projects/polkadot-network/</span></span>
+<span id="cb9-619"><a href="#cb9-619" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:    https://marketplace.substrate.io/projects/polkadot-network/</span></span>
+<span id="cb9-620"><a href="#cb9-620" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:      https://marketplace.substrate.io/projects/unique-network/</span></span>
+<span id="cb9-621"><a href="#cb9-621" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                       substrateURL</span></span>
+<span id="cb9-622"><a href="#cb9-622" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                parachainsURL</span></span>
+<span id="cb9-623"><a href="#cb9-623" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:                   https://parachains.info/details/altair</span></span>
+<span id="cb9-624"><a href="#cb9-624" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:            https://parachains.info/details/bajun_network</span></span>
+<span id="cb9-625"><a href="#cb9-625" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:                 https://parachains.info/details/basilisk</span></span>
+<span id="cb9-626"><a href="#cb9-626" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:          https://parachains.info/details/bifrost_finance</span></span>
+<span id="cb9-627"><a href="#cb9-627" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:      https://parachains.info/details/bit_country_pioneer</span></span>
+<span id="cb9-628"><a href="#cb9-628" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:         https://parachains.info/details/calamari_network</span></span>
+<span id="cb9-629"><a href="#cb9-629" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:            https://parachains.info/details/darwinia_crab</span></span>
+<span id="cb9-630"><a href="#cb9-630" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:             https://parachains.info/details/dora_factory</span></span>
+<span id="cb9-631"><a href="#cb9-631" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:                https://parachains.info/details/encointer</span></span>
+<span id="cb9-632"><a href="#cb9-632" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:            https://parachains.info/details/imbue_network</span></span>
+<span id="cb9-633"><a href="#cb9-633" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:               https://parachains.info/details/integritee</span></span>
+<span id="cb9-634"><a href="#cb9-634" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:                  https://parachains.info/details/kabocha</span></span>
+<span id="cb9-635"><a href="#cb9-635" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:                   https://parachains.info/details/karura</span></span>
+<span id="cb9-636"><a href="#cb9-636" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:                    https://parachains.info/details/khala</span></span>
+<span id="cb9-637"><a href="#cb9-637" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:                     https://parachains.info/details/kico</span></span>
+<span id="cb9-638"><a href="#cb9-638" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:                 https://parachains.info/details/kintsugi</span></span>
+<span id="cb9-639"><a href="#cb9-639" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:                               https://parachains.info/#!</span></span>
+<span id="cb9-640"><a href="#cb9-640" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:                   https://parachains.info/details/listen</span></span>
+<span id="cb9-641"><a href="#cb9-641" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:                   https://parachains.info/details/litmus</span></span>
+<span id="cb9-642"><a href="#cb9-642" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:                https://parachains.info/details/mangata_x</span></span>
+<span id="cb9-643"><a href="#cb9-643" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:                     https://parachains.info/details/mars</span></span>
+<span id="cb9-644"><a href="#cb9-644" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:                https://parachains.info/details/moonriver</span></span>
+<span id="cb9-645"><a href="#cb9-645" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:            https://parachains.info/details/heiko_finance</span></span>
+<span id="cb9-646"><a href="#cb9-646" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:                  https://parachains.info/details/picasso</span></span>
+<span id="cb9-647"><a href="#cb9-647" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:                   https://parachains.info/details/pichiu</span></span>
+<span id="cb9-648"><a href="#cb9-648" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:                   https://parachains.info/details/quartz</span></span>
+<span id="cb9-649"><a href="#cb9-649" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:               https://parachains.info/details/robonomics</span></span>
+<span id="cb9-650"><a href="#cb9-650" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:             https://parachains.info/details/crust_shadow</span></span>
+<span id="cb9-651"><a href="#cb9-651" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:           https://parachains.info/details/shiden_network</span></span>
+<span id="cb9-652"><a href="#cb9-652" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:                     https://parachains.info/details/sora</span></span>
+<span id="cb9-653"><a href="#cb9-653" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:            https://parachains.info/details/kilt_protocol</span></span>
+<span id="cb9-654"><a href="#cb9-654" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32:                https://parachains.info/details/statemine</span></span>
+<span id="cb9-655"><a href="#cb9-655" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:            https://parachains.info/details/subgame_gamma</span></span>
+<span id="cb9-656"><a href="#cb9-656" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:                https://parachains.info/details/subsocial</span></span>
+<span id="cb9-657"><a href="#cb9-657" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:                https://parachains.info/details/tanganika</span></span>
+<span id="cb9-658"><a href="#cb9-658" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:           https://parachains.info/details/turing_network</span></span>
+<span id="cb9-659"><a href="#cb9-659" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:               https://parachains.info/details/unorthodox</span></span>
+<span id="cb9-660"><a href="#cb9-660" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:                https://parachains.info/details/zeitgeist</span></span>
+<span id="cb9-661"><a href="#cb9-661" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:            https://parachains.info/details/acala_network</span></span>
+<span id="cb9-662"><a href="#cb9-662" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:            https://parachains.info/details/ares_protocol</span></span>
+<span id="cb9-663"><a href="#cb9-663" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:                    https://parachains.info/details/astar</span></span>
+<span id="cb9-664"><a href="#cb9-664" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42: https://parachains.info/details/bifrost_finance_polkadot</span></span>
+<span id="cb9-665"><a href="#cb9-665" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:               https://parachains.info/details/centrifuge</span></span>
+<span id="cb9-666"><a href="#cb9-666" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:           https://parachains.info/details/clover_finance</span></span>
+<span id="cb9-667"><a href="#cb9-667" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:       https://parachains.info/details/composable_finance</span></span>
+<span id="cb9-668"><a href="#cb9-668" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:                  https://parachains.info/details/efinity</span></span>
+<span id="cb9-669"><a href="#cb9-669" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:              https://parachains.info/details/equilibrium</span></span>
+<span id="cb9-670"><a href="#cb9-670" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:                  https://parachains.info/details/hydradx</span></span>
+<span id="cb9-671"><a href="#cb9-671" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:                 https://parachains.info/details/interlay</span></span>
+<span id="cb9-672"><a href="#cb9-672" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:                    https://parachains.info/details/totem</span></span>
+<span id="cb9-673"><a href="#cb9-673" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:                 https://parachains.info/details/litentry</span></span>
+<span id="cb9-674"><a href="#cb9-674" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:                 https://parachains.info/details/moonbeam</span></span>
+<span id="cb9-675"><a href="#cb9-675" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:                    https://parachains.info/details/nodle</span></span>
+<span id="cb9-676"><a href="#cb9-676" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:              https://parachains.info/details/origintrail</span></span>
+<span id="cb9-677"><a href="#cb9-677" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:         https://parachains.info/details/parallel_finance</span></span>
+<span id="cb9-678"><a href="#cb9-678" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:            https://parachains.info/details/phala_network</span></span>
+<span id="cb9-679"><a href="#cb9-679" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:                 https://parachains.info/details/polkadex</span></span>
+<span id="cb9-680"><a href="#cb9-680" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:                               https://parachains.info/#!</span></span>
+<span id="cb9-681"><a href="#cb9-681" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59:                https://parachains.info/details/statemint</span></span>
+<span id="cb9-682"><a href="#cb9-682" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:           https://parachains.info/details/unique_network</span></span>
+<span id="cb9-683"><a href="#cb9-683" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                parachainsURL</span></span>
+<span id="cb9-684"><a href="#cb9-684" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                               dappURL</span></span>
+<span id="cb9-685"><a href="#cb9-685" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-686"><a href="#cb9-686" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-687"><a href="#cb9-687" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-688"><a href="#cb9-688" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4:                                                              https://bifrost.app/</span></span>
+<span id="cb9-689"><a href="#cb9-689" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-690"><a href="#cb9-690" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6:                                                https://app.dolphin.manta.network/</span></span>
+<span id="cb9-691"><a href="#cb9-691" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7:                                       https://apps.darwinia.network/?network=crab</span></span>
+<span id="cb9-692"><a href="#cb9-692" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8:                                              https://core-pallet.dorafactory.org/</span></span>
+<span id="cb9-693"><a href="#cb9-693" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9:                                              https://encointer.org/encointer-app/</span></span>
+<span id="cb9-694"><a href="#cb9-694" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-695"><a href="#cb9-695" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 11:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-696"><a href="#cb9-696" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 12:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-697"><a href="#cb9-697" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 13:                                                      https://apps.karura.network/</span></span>
+<span id="cb9-698"><a href="#cb9-698" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 14:                                                        https://app.phala.network/</span></span>
+<span id="cb9-699"><a href="#cb9-699" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 15:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-700"><a href="#cb9-700" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 16:                                                     https://kintsugi.interlay.io/</span></span>
+<span id="cb9-701"><a href="#cb9-701" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 17:    https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fkusama-rpc.polkadot.io#/explorer</span></span>
+<span id="cb9-702"><a href="#cb9-702" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 18:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-703"><a href="#cb9-703" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 19:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-704"><a href="#cb9-704" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 20:                                                      https://app.mangata.finance/</span></span>
+<span id="cb9-705"><a href="#cb9-705" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 21:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-706"><a href="#cb9-706" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 22:                                           https://apps.moonbeam.network/moonriver</span></span>
+<span id="cb9-707"><a href="#cb9-707" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 23:                                                    https://app-heiko.parallel.fi/</span></span>
+<span id="cb9-708"><a href="#cb9-708" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 24:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-709"><a href="#cb9-709" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 25:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-710"><a href="#cb9-710" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 26:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-711"><a href="#cb9-711" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 27:                                                https://dapp.robonomics.network/#/</span></span>
+<span id="cb9-712"><a href="#cb9-712" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 28:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-713"><a href="#cb9-713" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 29:                                                     https://portal.astar.network/</span></span>
+<span id="cb9-714"><a href="#cb9-714" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 30:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-715"><a href="#cb9-715" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 31:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-716"><a href="#cb9-716" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 32: https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fstatemine-rpc.polkadot.io#/explorer</span></span>
+<span id="cb9-717"><a href="#cb9-717" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 33:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-718"><a href="#cb9-718" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 34:                                                    https://app.subsocial.network/</span></span>
+<span id="cb9-719"><a href="#cb9-719" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 35:                                                  https://www.mxc.org/datadash-app</span></span>
+<span id="cb9-720"><a href="#cb9-720" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 36:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-721"><a href="#cb9-721" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 37:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-722"><a href="#cb9-722" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 38:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-723"><a href="#cb9-723" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 39:                                                       https://apps.acala.network/</span></span>
+<span id="cb9-724"><a href="#cb9-724" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 40:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-725"><a href="#cb9-725" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 41:                                                     https://portal.astar.network/</span></span>
+<span id="cb9-726"><a href="#cb9-726" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 42:                                                              https://bifrost.app/</span></span>
+<span id="cb9-727"><a href="#cb9-727" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 43:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-728"><a href="#cb9-728" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 44:                                                  https://wallet.clover.finance/#/</span></span>
+<span id="cb9-729"><a href="#cb9-729" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 45:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-730"><a href="#cb9-730" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 46:                                                 https://enjin.io/products/efinity</span></span>
+<span id="cb9-731"><a href="#cb9-731" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 47:                                     https://app.equilibrium.io/gateway/en/vesting</span></span>
+<span id="cb9-732"><a href="#cb9-732" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 48:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-733"><a href="#cb9-733" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 49:                                                          https://app.interlay.io/</span></span>
+<span id="cb9-734"><a href="#cb9-734" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 50:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-735"><a href="#cb9-735" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 51:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-736"><a href="#cb9-736" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 52:                                                    https://apps.moonbeam.network/</span></span>
+<span id="cb9-737"><a href="#cb9-737" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 53:                                           https://www.nodle.com/products/cash_app</span></span>
+<span id="cb9-738"><a href="#cb9-738" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 54:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-739"><a href="#cb9-739" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 55:                                                          https://app.parallel.fi/</span></span>
+<span id="cb9-740"><a href="#cb9-740" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 56:                                                        https://app.phala.network/</span></span>
+<span id="cb9-741"><a href="#cb9-741" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 57:                                             http://orderbook-beta.polkadex.trade/</span></span>
+<span id="cb9-742"><a href="#cb9-742" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 58:           https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.polkadot.io#/explorer</span></span>
+<span id="cb9-743"><a href="#cb9-743" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 59: https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fstatemint-rpc.polkadot.io#/explorer</span></span>
+<span id="cb9-744"><a href="#cb9-744" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 60:                                                                              &lt;NA&gt;</span></span>
+<span id="cb9-745"><a href="#cb9-745" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                                                                               dappURL</span></span></code></pre></div>
+</div>
+<div id="python-substrate-interface" class="section level2">
+<h2>Python Substrate Interface</h2>
+<p>Most Web 3 tools are written in Javascript and Typescript, but the Polkascan team created a python library to interact with substrate and it works really well. I will show some examples below, but more documentation on it can be found <a href="https://polkascan.github.io/py-substrate-interface/">here</a>. If you have any questions on using it, the best place to ask in the the <a href="https://substrate.stackexchange.com/">Substrate Stack Exchange</a>.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">head</span>(mtcars, <span class="dv">10</span>))</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">mpg</th>
+<th align="right">cyl</th>
+<th align="right">disp</th>
+<th align="right">hp</th>
+<th align="right">drat</th>
+<th align="right">wt</th>
+<th align="right">qsec</th>
+<th align="right">vs</th>
+<th align="right">am</th>
+<th align="right">gear</th>
+<th align="right">carb</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Mazda RX4</td>
+<td align="right">21.0</td>
+<td align="right">6</td>
+<td align="right">160.0</td>
+<td align="right">110</td>
+<td align="right">3.90</td>
+<td align="right">2.620</td>
+<td align="right">16.46</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Mazda RX4 Wag</td>
+<td align="right">21.0</td>
+<td align="right">6</td>
+<td align="right">160.0</td>
+<td align="right">110</td>
+<td align="right">3.90</td>
+<td align="right">2.875</td>
+<td align="right">17.02</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Datsun 710</td>
+<td align="right">22.8</td>
+<td align="right">4</td>
+<td align="right">108.0</td>
+<td align="right">93</td>
+<td align="right">3.85</td>
+<td align="right">2.320</td>
+<td align="right">18.61</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">4</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">Hornet 4 Drive</td>
+<td align="right">21.4</td>
+<td align="right">6</td>
+<td align="right">258.0</td>
+<td align="right">110</td>
+<td align="right">3.08</td>
+<td align="right">3.215</td>
+<td align="right">19.44</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Hornet Sportabout</td>
+<td align="right">18.7</td>
+<td align="right">8</td>
+<td align="right">360.0</td>
+<td align="right">175</td>
+<td align="right">3.15</td>
+<td align="right">3.440</td>
+<td align="right">17.02</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Valiant</td>
+<td align="right">18.1</td>
+<td align="right">6</td>
+<td align="right">225.0</td>
+<td align="right">105</td>
+<td align="right">2.76</td>
+<td align="right">3.460</td>
+<td align="right">20.22</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">Duster 360</td>
+<td align="right">14.3</td>
+<td align="right">8</td>
+<td align="right">360.0</td>
+<td align="right">245</td>
+<td align="right">3.21</td>
+<td align="right">3.570</td>
+<td align="right">15.84</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Merc 240D</td>
+<td align="right">24.4</td>
+<td align="right">4</td>
+<td align="right">146.7</td>
+<td align="right">62</td>
+<td align="right">3.69</td>
+<td align="right">3.190</td>
+<td align="right">20.00</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">Merc 230</td>
+<td align="right">22.8</td>
+<td align="right">4</td>
+<td align="right">140.8</td>
+<td align="right">95</td>
+<td align="right">3.92</td>
+<td align="right">3.150</td>
+<td align="right">22.90</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Merc 280</td>
+<td align="right">19.2</td>
+<td align="right">6</td>
+<td align="right">167.6</td>
+<td align="right">123</td>
+<td align="right">3.92</td>
+<td align="right">3.440</td>
+<td align="right">18.30</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">4</td>
+<td align="right">4</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -697,7 +697,7 @@ get_subscan_token <- function(network = 'Karura') {
 #' @return list
 #'
 #' @examples
-#' get_subscan_account_token(network = 'Acala', address = '23M5ttkmR6Kco5p3LFGKMpMv4zvLkKdUQWW1wGGoV8zDX3am')
+#' get_subscan_account_tokens(network = 'Acala', addr = '23M5ttkmR6Kco5p3LFGKMpMv4zvLkKdUQWW1wGGoV8zDX3am')
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
@@ -733,7 +733,7 @@ get_subscan_account_tokens <- function(network = 'KaruraA', addr) {
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_subscan_accounts <- function(network = 'Karura', nobs = 200000, start_page = 1) {
+get_subscan_accounts <- function(network = 'Karura', nobs = 100, start_page = 1) {
 
   # nobs = 300; network = 'Acala'; row = 1; page = 1; start_page = 1
   api_host <- get_endpoint(network)
@@ -816,7 +816,7 @@ get_subscan_metadata <- function(network = 'Karura') {
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_subscan_extrinsic <- function(network = 'Karura', extrinsic = '398539-2') {
+get_subscan_extrinsic <- function(network = 'Karura', extrinsic) {
 
   api_host <- get_endpoint(network)
   api_call <- '/api/scan/extrinsic'
