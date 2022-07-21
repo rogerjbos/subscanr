@@ -697,7 +697,8 @@ get_subscan_token <- function(network = 'Karura') {
 #' @return list
 #'
 #' @examples
-#' get_subscan_account_tokens(network = 'Acala', addr = '23M5ttkmR6Kco5p3LFGKMpMv4zvLkKdUQWW1wGGoV8zDX3am')
+#' get_subscan_account_tokens('Acala', addr =
+#' '23M5ttkmR6Kco5p3LFGKMpMv4zvLkKdUQWW1wGGoV8zDX3am')
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
@@ -943,7 +944,8 @@ get_subscan_currencies <- function(network = 'Polkadot') {
 #' @return list
 #'
 #' @examples
-#' get_subscan_price_converter(network = 'Polkadot', time = 957105, value = 1000, from = 'USD', quote = 'DOT')
+#' get_subscan_price_converter('Polkadot', time = 957105,
+#' value = 1000, from = 'USD', quote = 'DOT')
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export

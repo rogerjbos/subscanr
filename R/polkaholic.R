@@ -2,6 +2,8 @@ library(data.table)
 library(httr)
 library(jsonlite)
 
+`%+%` <- function(a, b) paste0(a, b)
+
 # MUST SET `polkaholic_api_key` with your private api key
 if (!exists("polkaholic_api_key")) polkaholic_api_key <- ""
 polkaholic_api_header <- 'Authorization: ' %+% polkaholic_api_key
@@ -64,7 +66,8 @@ get_polkaholic_chains <- function() {
 #' @return data.table
 #'
 #' @examples
-#' get_polkaholic_events(chain = "karura", module = "dex", call = 'Swap', startDate='2022-07-01', endDate='2022-07-02', nobs = 5)
+#' get_polkaholic_events("karura", module = "dex", call = 'Swap',
+#' startDate='2022-07-01', endDate='2022-07-02', nobs = 5)
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
@@ -118,7 +121,8 @@ get_polkaholic_events <- function(chain, module, call, startDate, endDate, start
 #' @return data.table
 #'
 #' @examples
-#' t1 <- get_polkaholic_events(chain = "karura", module = "dex", call = 'Swap', startBlock=1, endBlock=2208550, nobs = 10)
+#' t1 <- get_polkaholic_events("karura", module = "dex", call = 'Swap',
+#' startBlock=1, endBlock=2208550, nobs=10)
 #' t2 <- extract_polkaholic_events(t1)
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
@@ -194,7 +198,8 @@ get_polkaholic_hash <- function(TxHash) {
 #' @return data.table
 #'
 #' @examples
-#' get_polkaholic_transaction(TxHash = '0x8b91d038421d5aba4b3a651d70923fb0d41423b914d6dad910637aa2c9a2ad70')
+#' get_polkaholic_transaction(TxHash =
+#' '0x8b91d038421d5aba4b3a651d70923fb0d41423b914d6dad910637aa2c9a2ad70')
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export

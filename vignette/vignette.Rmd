@@ -101,23 +101,71 @@ get_subscan_price_converter(network = 'Polkadot', time = 957105, value = 1000, f
 
 ## Sub Query
 
-Sub Query takes a different approach.
+Sub Query takes a different approach.  They provide a framework where someone can create a TypeScript project that collects and indexes blockchain data and Sub Query will host that project.  Then users can use `GraphQL` to query the indexed data from that project.
 
-
-Sub Query has a search feature to find projects for a specific chain you are interested.  `Acala` and `Karura` has many different projects, a short list of which can be found [here](https://acala.rogerjbos.com/about/).
-
+Sub Query has a search feature to find projects for a specific chain you are interested.  `Acala` and `Karura` has many different projects, a short list of which can be found [here](https://acala.rogerjbos.com/about/).  For example Karura has a project called `karura-tokens`.  In the example below we use the `get_query` function to pass a `url` and a `query` to a Sub Query project and view the returned data.
 
 ```{r}
-
 url <- 'https://api.subquery.network/sq/AcalaNetwork/karura-tokens'
 query <- 'query { accountBalances (first: 6) { nodes { id accountId tokenId total } } }'
 tmp <- get_query(url, query)
 head(tmp)
 ```
+The function `get_query` is just an example of how to use `GraphQL` to execute a simple query.  A better example is the `get_graph` function which takes an endpoint, method, edges, and window as parameters.  The `endpoint` is the url of the Sub Query project's GraphQL server and the `window` is the number of days of history to query.  
 
+The `method` and `edges` can be found from the `schema.graphql` file within the associated project. [Here](https://github.com/AcalaNetwork/acala-dex-subql/blob/master/schema.graphql) of a `schema.graphql` file.  In the example `Swap` is automatically converted to `swaps`, so that is what you put in for `method` and the `edges` are the fields you would like to query, where the `schema.graphql` lists all the possible fields for each type.  
 
+Sub Query also only returns 100 rows per call, so the `get_graph` function automatically uses pagination to collect and aggregate the output into one return object.
 
+```{r}
+endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
+method <- "swaps"
+edges <- "id address {id} pool {id}  token0 {id} token1 {id} token0InAmount token1OutAmount tradePath price0 price1 block {id} extrinsic {id} timestamp"
+res <- get_graph(endpoint, method, edges, window = 1)
+nrow()
+head(res)
+```
 
+Now for the real functions!  The first part of the function name describes the data that the function returns and the last part indicates which Sub Query project it comes from, so this function get the `Swaps` data from `acala-dex`.  For network you can use `Acala` or `Karura`.  Those are the only two implemented so far.  To include other parachains, someone would first have to create the TypeScript project to index the data.  Since each parachains stores their data in a different way, you would realy need to write a custom function for each parachain, which can make cross-chain analysis difficult in the DotSama ecosystem.
+
+The `window` parameters indicates how many days history you would like and the `endpage` parameters specifies the max number of observations, where each page returns 100 observations.  The default is 20,000, which should be enough for most calls.  I set a lower number in these examples so it runs faster since they are just examples.
+
+```{r}
+tmp <- getSwaps_acala_dex(network = "Acala", window = 1, endpage = 1)
+head(tmp)
+```
+
+Here is a function that pulls the `daily account balance` data from the `acala-token` project.
+
+```{r}
+tmp <- getDailyAccountBalance_acala_token(network = "Acala", window = 1, endpage = 1)
+head(tmp)
+```
+
+The next example shows the daily aggregated loan data from the `acala-loans` project.  This is known as the Honzon protocol.  The `depositAmount` is the amount of `collaeral` that was deposited, and `depositVolumeUSD` shows the value in USD.  The depositors are allowed to mint a certain amount of stablecoin backed by that collateral and the amount minted is shown in the `debitAmount`.
+
+```{r}
+tmp <- getLoansDailyCollateral_acala_loan(network = "Acala", window = 1)
+head(tmp)
+```
+```
+Here are some other examples you can try on your own.
+
+```{r, eval = FALSE}
+tmp <- getDailyPools_acala_dex(network = "Acala", window = 1)
+tmp <- getLoansCollateralParams_acala_loan(network = "Acala")
+tmp <- getLoansDailyPositions_acala_loan(network = "Acala", window = 1)
+tmp <- getLiquidateUnsafeCDP_acala_loan(network = "Acala", window = 30)
+tmp <- getDailyAccountBalance_acala_token(network = "Acala", window = 1, endpage = 1)
+tmp <- getMint_acala_homa(network = "Acala", window = 1, endpage = 1)
+tmp <- getRequestedRedeem_acala_homa(network = "Acala", window = 1, endpage = 1)
+tmp <- getRedeemRequestCancelled_acala_homa(network = "Acala", window = 1, endpage = 1)
+tmp <- getRedeemByUnbond_acala_homa(network = "Acala", window = 1, endpage = 1)
+tmp <- getRedeemByFastMatch_acala_homa(network = "Acala", window = 1, endpage = 1)
+tmp <- getPoolStats_acala_dex(network = "Acala", window = 1)
+tmp <- getTokenDailyData_acala_dex(network = "Acala", window = 1)
+tmp <- getDailyPool_acala_dex(network = "Acala", window = 1)
+```
 
 
 ## Polkaholic

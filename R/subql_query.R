@@ -652,7 +652,7 @@ getAccountBalance_acala_token <- function(network, window, filter = '', endpage 
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getPositions_acala_loan <- function(network, window, filter, endpage = 2000, staging = FALSE) {
+getPositions_acala_loan <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
