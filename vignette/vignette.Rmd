@@ -224,9 +224,175 @@ get_polkaholic_hash(TxHash = '0x079192270cfd80cebf03c54eb59dd48528b6e1506a697ed6
 
 ## Python Substrate Interface
 
-Most Web3 tools are written in Javascript and / or Typescript, but the [Polkascan](https://explorer.polkascan.io/) team created a python library to interact with substrate and it works really well.  I will show some examples below, but more documentation on it can be found [here](https://polkascan.github.io/py-substrate-interface/).  If you have any questions on using it, the best place to ask in the the [Substrate Stack Exchange](https://substrate.stackexchange.com/).
+Subscan, Sub Query, and Polkaholic are all good for collecting data that has already been indexed, but if you data directly from the substrate blockchain, most people use the polkadot{js} API, which is written in Javascript.  While there are no tools like that written in R, the [Polkascan](https://explorer.polkascan.io/) team created a python library to interact with substrate and it works really well.  Thanks to the [reticulate](https://rstudio.github.io/reticulate/) package we can run python code within R.  I will show some examples below, but more documentation on it can be found [here](https://polkascan.github.io/py-substrate-interface/).  If you have any questions on using it, the best place to ask is in the the [Substrate Stack Exchange](https://substrate.stackexchange.com/).  After installing `reticulate` in R and `py-substrate-interface` in python, you need to load the package into R:
 
-```{r, results='asis'}
-knitr::kable(head(mtcars, 10))
+```{r}
+library(reticulate)
 ```
+
+Then define your python function.  In this example we will use the `system.Account` module to get the number of tokens held by an account.  In this example we are not specify a block number, so it gives us the tip by default (the latest block).
+
+```{python}
+from substrateinterface import SubstrateInterface
+
+import pandas as pd
+
+def get_Balance(chain, addr):
+    if chain=="Polkadot":
+        url = 'wss://polkadot.api.onfinality.io/public-ws'
+        decimals = 10
+    elif chain=="Kusama":
+        url = 'wss://kusama.api.onfinality.io/public-ws'
+        decimals = 12
+    elif chain=="Karura":
+        url = 'wss://karura.polkawallet.io'
+        decimals = 12
+    else:
+        url = 'wss://acala-rpc-0.aca-api.network'
+        decimals = 12
+        
+    substrate = SubstrateInterface(url)
+    balance_info = substrate.get_runtime_state(
+        module='System',
+        storage_function='Account',
+        params=[addr]).get('result')
+    balance = balance_info.get('data').get('free', 0)
+    print(f"Address {addr} had {balance / 10**decimals} DOT.")
+    
+get_Balance(chain = "Polkadot", addr = '14QV6hfAiXyb5LBajUqWR9CrQKxfQZMkBiERpQFuoj7YBqis')
+
+```
+
+In this example we are querying the Acala oracle to get the token prices as of a certain block number.  In order to query data as of a certain block number, we need to know the block hash, which we can get from the `get_block_hash` function.  In substrate, pricing data always has 18 decimal places, so we adjust the price for that.
+
+```{python}
+from substrateinterface import SubstrateInterface
+
+import pandas as pd
+
+def getOraclePrices(chain, block_id):
+    if chain=="Karura":
+        url = 'wss://karura.polkawallet.io'
+    else:
+        url = 'wss://acala-rpc-0.aca-api.network'
+    
+    substrate = SubstrateInterface(url)
+    hash = substrate.get_block_hash(block_id)
+    timestamp = substrate.query(module='Timestamp',storage_function='Now',
+      block_hash=hash).value
+    p = substrate.query_map('AcalaOracle', 'Values', block_hash = hash)
+    data = []
+    for res in p:
+        outi = {"chain": chain, "token": str(res[0].value), "price": 
+          res[1].value['value'] / 10**18}
+        data.append(outi)
+    
+    out = pd.DataFrame(data)
+    return out
+
+tmp = getOraclePrices(chain='Karura', block_id=2000000)
+print(tmp)
+
+```
+
+Substrate is somewhat unique in that each network has a different address format, but it is easy to convert an address format from one parachain to another by way of the public key.  The polkadot{js} API has an `encodeAddress` function that does the conversion in one call, but using `py-substrate-interface` we will use the `ss58_decode` function to convert the origin address to its public key and then use the `ss58_encode` function to convert that public key into the destination address.  Each network has a `ss58_format`.  In this example we are converting from Substrate, which is ss58_format 42, to Acala Network, which is ss58_format 10.
+
+```{python}
+from substrateinterface import SubstrateInterface
+from substrateinterface.utils.ss58 import ss58_decode, ss58_encode
+
+# Convert ss58 address from one chain to another 
+# (i.e. Substrate=42, Polkadot=0, Kusama=2, Acala=10, Karura=8)
+def ss58_convert(addr, fromChain, toChain):
+  pk = ss58_decode(addr, valid_ss58_format = int(fromChain))
+  output = ss58_encode(pk, ss58_format = int(toChain))
+  return output
+
+addr = "5EChUec3ZQhUvY1g52ZbfBVkqjUY9Kcr6mcEvQMbmd38shQL"
+newAddress = ss58_convert(addr, fromChain=42, toChain=10)
+print(f"Substrate address {addr} \n translates to Acala address {newAddress}.")
+
+```
+
+In this example we are getting the account balance as of a specific block number.  We also use the `pandas.to_datetime` function to convert the block timestamp into a human readable format.
+
+```{python}
+from substrateinterface import SubstrateInterface
+
+import pandas as pd
+# import numpy as np
+from datetime import date
+
+def get_fees(url, acct, block_id):
+    substrate = SubstrateInterface(url)
+    hash = substrate.get_block_hash(int(block_id))        
+    timestamp = substrate.query(module='Timestamp',storage_function='Now',
+      block_hash=hash).value
+    block = substrate.get_block_number(hash)
+    balance_info = substrate.get_runtime_state(
+        module='System',
+        storage_function='Account',
+        params=[acct],
+        block_hash=hash
+    ).get('result')
+    balance = balance_info.get('data').get('free', 0) / 10**12
+    out = {"Block": block, "Time": timestamp, 'Balance': balance}
+    return out
+            
+url = 'wss://acala-rpc-0.aca-api.network'
+acct = '23M5ttkmR6KcoTAAE6gcmibnKFtVaTP5yxnY8HF1BmrJ2A1i'
+block_id = '2100000'
+
+fees = get_fees(url=url, acct=acct, block_id=block_id)
+fees['Time'] = pd.to_datetime(fees['Time'],unit='ms')
+print(fees)
+
+```
+
+In the final example we define a function that makes two calls, one to `tokens.TotalIssuance` and a second one to `homa.StakingLedgers`.  The latter refers to Acala Network's Homa liquid staking protocol, which converts a staked token to a liquid derivative to allow the token to be used in DeFi while it is being staked.  This function also takes an array of block history, so it shows the values as of multiple block numbers.
+
+```{python}
+from substrateinterface import SubstrateInterface
+
+import pandas as pd
+from datetime import date
+import json
+
+def getTotalIssuance(network, block_history):
+    if network.lower() == 'acala':
+        url = 'wss://acala-rpc-0.aca-api.network'
+        token = 'LDOT'
+        decimals = 10
+    else: 
+        url = 'wss://karura.polkawallet.io'      
+        token = 'LKSM'
+        decimals = 12
+    
+    data = []
+    substrate = SubstrateInterface(url)
+    for j in block_history:
+        hash = substrate.get_block_hash(block_id = int(j))
+        liquid = substrate.query(module='Tokens',storage_function='TotalIssuance', 
+          params = [{'Token': token}], block_hash = hash).value / 10**decimals
+        
+        try:
+            homa = substrate.query_map(module='Homa',storage_function='StakingLedgers', 
+              block_hash = hash)
+            amount = 0
+            for res in homa:
+                amount += res[1].value['bonded']
+        except:
+            amount = 0
+        outi = {"network": network, "Block": j, 'liquid_amount': liquid, 
+          'staking_amount': amount / 10**decimals}
+        data.append(outi)
+    out = pd.DataFrame(data)
+    return out
+
+tmp = getTotalIssuance(network="Acala", block_history=[2000000,2100000,2200000])
+print(tmp)
+
+```
+
+I hope this vignette has demonstrate the wide variety of blockchain data you can pull into R.  Once you have the data in R there are endless statistical and graphing routines which are available to analyze the data and gleam insights based on the on-chain data.
 
