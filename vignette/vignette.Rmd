@@ -106,6 +106,9 @@ Sub Query takes a different approach.  They provide a framework where someone ca
 Sub Query has a search feature to find projects for a specific chain you are interested.  `Acala` and `Karura` has many different projects, a short list of which can be found [here](https://acala.rogerjbos.com/about/).  For example Karura has a project called `karura-tokens`.  In the example below we use the `get_query` function to pass a `url` and a `query` to a Sub Query project and view the returned data.
 
 ```{r}
+library(ghql)
+x <- GraphqlClient$new()
+
 url <- 'https://api.subquery.network/sq/AcalaNetwork/karura-tokens'
 query <- 'query { accountBalances (first: 6) { nodes { id accountId tokenId total } } }'
 tmp <- get_query(url, query)
@@ -122,7 +125,7 @@ endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
 method <- "swaps"
 edges <- "id address {id} pool {id}  token0 {id} token1 {id} token0InAmount token1OutAmount tradePath price0 price1 block {id} extrinsic {id} timestamp"
 res <- get_graph(endpoint, method, edges, window = 1)
-nrow()
+nrow(res)
 head(res)
 ```
 
@@ -131,7 +134,7 @@ Now for the real functions!  The first part of the function name describes the d
 The `window` parameters indicates how many days history you would like and the `endpage` parameters specifies the max number of observations, where each page returns 100 observations.  The default is 20,000, which should be enough for most calls.  I set a lower number in these examples so it runs faster since they are just examples.
 
 ```{r}
-tmp <- getSwaps_acala_dex(network = "Acala", window = 1, endpage = 1)
+tmp <- getSwaps_acala_dex(network = "Acala", window = 1)
 head(tmp)
 ```
 
