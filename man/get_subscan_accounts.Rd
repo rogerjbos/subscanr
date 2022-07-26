@@ -5,7 +5,7 @@
 \alias{get_subscan_accounts}
 \title{get_subscan_accounts}
 \usage{
-get_subscan_accounts(network = "Karura", nobs = 200000, start_page = 1)
+get_subscan_accounts(network = "Karura", nobs = 100, start_page = 1)
 }
 \arguments{
 \item{network}{string indicating which Polkadot endpoint to use; defaults to 'Karura'.}

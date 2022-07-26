@@ -19,7 +19,8 @@ Get tokens from the Subscan api
 https://docs.api.subscan.io
 }
 \examples{
-get_subscan_account_token(network = 'Acala', address = '23M5ttkmR6Kco5p3LFGKMpMv4zvLkKdUQWW1wGGoV8zDX3am')
+get_subscan_account_tokens('Acala', addr =
+'23M5ttkmR6Kco5p3LFGKMpMv4zvLkKdUQWW1wGGoV8zDX3am')
 
 }
 \author{

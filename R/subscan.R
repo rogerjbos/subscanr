@@ -86,6 +86,7 @@ endpoint_list <- c("Polkadot","polkadot.api.subscan.io",
                    "Statemine","statemine.api.subscan.io",
                    "Uniarts","uniarts.api.subscan.io",
                    "Westend","westend.api.subscan.io")
+#' @export
 endpoints <- as.data.table(matrix(endpoint_list, ncol = 2, byrow = TRUE))
 setnames(endpoints, c("network_name","api_host"))
 #' @export

@@ -28,7 +28,8 @@ Get the amount of the target currency base on the amount of source currency give
 https://docs.api.subscan.io
 }
 \examples{
-get_subscan_price_converter(network = 'Polkadot', time = 957105, value = 1000, from = 'USD', quote = 'DOT')
+get_subscan_price_converter('Polkadot', time = 957105,
+value = 1000, from = 'USD', quote = 'DOT')
 
 }
 \author{

@@ -5,7 +5,7 @@
 \alias{get_subscan_extrinsic}
 \title{get_subscan_extrinsic}
 \usage{
-get_subscan_extrinsic(network = "Karura", extrinsic = "398539-2")
+get_subscan_extrinsic(network = "Karura", extrinsic)
 }
 \arguments{
 \item{network}{string indicating which Polkadot endpoint to use; defaults to 'Karura'.}

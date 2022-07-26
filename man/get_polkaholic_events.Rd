@@ -13,7 +13,7 @@ get_polkaholic_events(
   endDate,
   startBlock = NA,
   endBlock = NA,
-  nobs = 10000
+  nobs = 1000
 )
 }
 \arguments{
@@ -35,7 +35,8 @@ Get events from the Polkadot blockchain from the Polkaholic api
 https://docs.polkaholic.io
 }
 \examples{
-get_polkaholic_events(chain = "karura", module = "dex", call = 'Swap', startDate='2022-07-01', endDate='2022-07-02')
+get_polkaholic_events("karura", module = "dex", call = 'Swap',
+startDate='2022-07-01', endDate='2022-07-02', nobs = 5)
 
 }
 \author{
