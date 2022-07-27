@@ -624,7 +624,8 @@ getDailyAccountBalance_acala_token <- function(network, window, filter = '', end
 getAccountBalance_acala_token <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
 
   # query {\n        accountBalances (filter: {tokenId: {in: [\"DOT\",\"LDOT\"]}, total: {greaterThan: \"0\"}}  first:100) {\n          totalCount\n          edges {\n            node { accountId tokenId total}\n            cursor\n          }\n          pageInfo {\n            endCursor\n            hasNextPage\n          }\n        }\n      }\n    }"
-  # network="acala"; window = 1; filter = 'filter: {tokenId: {in: ["DOT","LDOT"]}, total: {greaterThan: "0"}} '; endpage = 2e9
+  # network="acala"; window = 1; filter = 'filter: {tokenId: {in: ["LDOT"]}, total: {greaterThan: "0"}} '; endpage = 2e9
+  # network="karura"; window = 1; filter = 'filter: {tokenId: {in: ["LKSM"]}, total: {greaterThan: "0"}} '; endpage = 2e9
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-tokens-ipfs"
   } else if (tolower(network) == 'karura') {
