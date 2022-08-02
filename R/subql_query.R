@@ -28,6 +28,24 @@ myPath <- function(path) {
   list(path0=path0, path1=path1, path2=path2)
 }
 
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+myAmount <- function(path) {
+  # path <- res$amounts
+  path0 <- list()
+  path1 <- list()
+  path2 <- list()
+  path3 <- list()
+  path <- strsplit(path, ",")
+  for (i in 1:length(path)) {
+    path0[[i]] <- path[[i]][1]
+    path1[[i]] <- path[[i]][2]
+    path2[[i]] <- ifelse(path[[i]][3] == "", "", path[[i]][3])
+    path3[[i]] <- ifelse(path[[i]][4] == "", "", path[[i]][4])
+  }
+  list(path0=path0, path1=path1, path2=path2, path3=path3)
+}
+
 # Helper function to concat
 `%+%` <- function(a, b) paste0(a, b)
 
@@ -442,7 +460,7 @@ getSwaps_acala_dex <- function(network, window, block = NULL, staging = FALSE) {
 
   method <- "swaps"
   edges <- "id address {id} pool {id}  token0 {id} token1 {id} token0InAmount token1OutAmount tradePath price0 price1
-            block {id} extrinsic {id} timestamp"
+            amounts block {id} extrinsic {id} timestamp"
   if (!is.null(block)) {
     filter <- 'filter: {blockId: {equalTo: "' %+% block %+% '"}} '
     res <- get_graph(endpoint, method, edges, window, filter)
@@ -450,18 +468,10 @@ getSwaps_acala_dex <- function(network, window, block = NULL, staging = FALSE) {
     res <- get_graph(endpoint, method, edges, window)
   }
 
-  # if (substr(max(res$timestamp), 12, 13) < 23) {
-  #   maxdate <- as.Date(max(res$timestamp))-1
-  # } else {
-  #   maxdate <- as.Date(max(res$timestamp))
-  # }
-  # res <- res[timestamp <= maxdate]
-
   res[, date := as.Date(timestamp)]
   setorder(res, timestamp)
 
   names(res) <- gsub(".id","", names(res))
-
 
   # Replace foreign assets
   res[, token0 := fixToken(token0)]
@@ -472,9 +482,22 @@ getSwaps_acala_dex <- function(network, window, block = NULL, staging = FALSE) {
   res[, pair := paste0(token0 %+% ":" %+% token1)]
   res[token1 < token0, pair := paste0(token1 %+% ":" %+% token0)]
 
+  # Create pair0, pair1, etc.
   z <- myPath(res$tradePath)
   res[, path0 := z$path0][, path1 := z$path1][, path2 := z$path2]
-  res[, exclude := token0 == token1]
+  # Create token0, token1, etc.
+  a1 <- myAmount(res$tradePath)
+  res[, tokenPath0 := a1$path0][, tokenPath1 := a1$path1][, tokenPath2 := a1$path2][, tokenPath3 := a1$path3]
+  res[, tokenPath0 := fixToken(tokenPath0)]
+  res[, tokenPath1 := fixToken(tokenPath1)]
+  res[, tokenPath2 := fixToken(tokenPath2)]
+  res[, tokenPath3 := fixToken(tokenPath3)]
+
+  # Create amount0, amount1, etc.
+  a2 <- myAmount(res$amounts)
+  res[, amount0 := a2$path0][, amount1 := a2$path1][, amount2 := a2$path2][, amount3 := a2$path3]
+
+  # res[, exclude := token0 == token1]
   res
 
 }
