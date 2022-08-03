@@ -137,7 +137,6 @@ fixToken <- function(x) {
 
   x <- gsub("{'DexShare' ", 'lp:', x, perl = TRUE)
   x <- gsub("}", '', x, perl = TRUE)
-  x
 }
 
 
@@ -148,6 +147,7 @@ tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("ACA", "aca-token", 12),
                               c("AIR","altair", 18),
                               c("ARIS","polaris-dao", 8),
+                              c("ARIS2","polaris-dao", 8),
                               c("AUSD","acala-dollar", 12),
                               c("BNC","bifrost-native-coin", 12),
                               c("BSX","basilisk", 12),
