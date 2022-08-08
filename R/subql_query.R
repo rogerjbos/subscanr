@@ -407,6 +407,65 @@ getLoansDailyPositions_acala_loan <- function(network, window, staging = FALSE) 
 
 }
 
+
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getLoansCollateral_acala_loan <- function(network, window, staging = FALSE) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "collaterals"
+  filter <- ""
+  edges <- "id name decimals depositAmount debitAmount txCount"
+  res <- get_graph(endpoint, method, edges, window, filter = "")
+
+  stopifnot(nrow(res) > 0)
+  res[, id := fixToken(id)]
+  res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
+  res[, depositAmount := as.numeric(depositAmount) / adj]
+  res[, debitAmount := as.numeric(debitAmount) / adj]
+  res
+
+}
+
+
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getLoansPositions_acala_loan <- function(network, window, staging = FALSE) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "positions"
+  filter <- ""
+  edges <- "id owner {id} collateral {id} txCount depositAmount debitAmount updateAt updateAtBlock {id}"
+  res <- get_graph(endpoint, method, edges, window, filter = "")
+
+  stopifnot(nrow(res) > 0)
+  res[, id := fixToken(id)]
+  res <- merge(res, tokens, by.x = "collateral.id", by.y = "Token")
+  res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
+  res[, depositAmount := as.numeric(depositAmount) / adj]
+  res[, debitAmount := as.numeric(debitAmount) / adj]
+  res
+
+}
+
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
 getLoansDailyCollateral_acala_loan <- function(network, window, staging = FALSE) {

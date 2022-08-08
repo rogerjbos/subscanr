@@ -25,8 +25,6 @@ if (!exists("subscan_api_key")) subscan_api_key <- ""
 api_header <- 'x-api-key=' %+% subscan_api_key
 
 
-
-
 endpoint_list <- c("Polkadot","polkadot.api.subscan.io",
                    "Kusama","kusama.api.subscan.io",
                    "Darwinia","darwinia.api.subscan.io",
@@ -91,6 +89,85 @@ endpoints <- as.data.table(matrix(endpoint_list, ncol = 2, byrow = TRUE))
 setnames(endpoints, c("network_name","api_host"))
 #' @export
 get_endpoint <- function(x) endpoint_list[match(x, endpoint_list) + 1]
+
+
+#' Get events from the Polkadot blockchain from the Subscan api
+#' https://docs.api.subscan.io
+#'
+#' @name get_subscan_events
+#' @title get_subscan_events
+#' @encoding UTF-8
+#' @concept Get events from the Polkadot blockchain from the Subscan api
+#' @param nobs integer how many transactions to pull
+#' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
+#' @param module string indicating which module to pull; leave blank for all.
+#' @param call string indicating which function call to pull; leave blank for all.
+#'
+#' @return data.table
+#'
+#' @examples
+#' tmp <- get_subscan_events(nobs = 111); dim(tmp$core_data)
+#' tmp <- get_subscan_events(nobs = 10, network = 'Karura', module = 'dex', call = 'Swap')
+#'
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+get_subscan_extrinsics <- function(nobs = 500, network = 'Acala', start_page = 1, module = '', call = '', block = NULL, extract = TRUE) {
+
+  # nobs = 100; network = 'Karura'; module = 'transactionPayment'; call = 'with_fee_currency'; start_page = 1; extract = TRUE
+
+  api_host <- get_endpoint(network)
+  api_call <- '/api/v2/scan/extrinsics'
+  baseurl <- paste0('https://', api_host, api_call)
+
+  # each `page` pulls in 100 rows, so calculate how many pages you need to pull
+  last_page <- ceiling(max(1, (nobs / 100))) + (start_page - 1)
+
+  page_list <-list()
+  params_list <-list()
+  for (page in start_page:last_page) {
+    if (page %% 2 == 0) Sys.sleep(2)
+
+      body <- ' {"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"module": "' %+% module %+% '","call": "' %+% call %+% '"}'
+      r <- POST(url = baseurl, body = body,
+                add_headers(api_header, 'Content-Type: application/json'))
+      r
+
+      while(r$status_code != 200) {
+      print("Error " %+% r$status_code)
+      Sys.sleep(3)
+      r <- POST(baseurl, body = body,
+                add_headers(api_header, 'Content-Type: application/json'))
+    }
+
+    # stop_for_status(r)
+    tmp <- content(r, as="text", encoding="UTF-8") %>%
+      fromJSON(flatten=TRUE)
+    core_data <- tmp$data$events %>%
+      as.data.table
+    params <- core_data$params
+
+    if (nrow(core_data) == 0) {
+      page <- last_page
+    } else {
+      core_data <- core_data[, params := NULL]
+
+      print(nrow(core_data) %+% " rows for page " %+% page %+% "/" %+% last_page %+% " " %+% tmp$message %+% " at " %+% Sys.time())
+      page_list[[page]] <- core_data
+      params_list[[page]] <- params
+
+    }
+
+
+
+  }
+  core_data <- rbindlist(page_list)
+  params <- do.call("c", params_list)
+
+  if (extract) return(extract_events(core_data, params))
+
+  list(core_data = core_data, params = params)
+
+}
 
 
 #' Get events from the Polkadot blockchain from the Subscan api
@@ -809,27 +886,27 @@ get_subscan_metadata <- function(network = 'Karura') {
 #' @encoding UTF-8
 #' @concept Get all events for a specific extrinsic id from the Subscan api
 #' @param network string indicating which Polkadot endpoint to use; defaults to 'Karura'.
-#' @param extrinsic string extrinsic id to pull.
+#' @param extrinsic_index string extrinsic id to pull.
 #'
 #' @return list
 #'
 #' @examples
-#' get_subscan_extrinsic(extrinsic = '398539-2')
+#' get_subscan_extrinsic(extrinsic_index = '398539-2')
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-get_subscan_extrinsic <- function(network = 'Karura', extrinsic) {
+get_subscan_extrinsic <- function(network = 'Karura', extrinsic_index) {
 
   api_host <- get_endpoint(network)
   api_call <- '/api/scan/extrinsic'
   baseurl <- paste0('https://', api_host, api_call)
   r <- POST(baseurl,
             add_headers(api_header, 'Content-Type=application/json'),
-            body = '{"extrinsic_index": "' %+% extrinsic %+% '"}')
+            body = '{"extrinsic_index": "' %+% extrinsic_index %+% '"}')
   stop_for_status(r)
   tmp <- content(r, as="text", encoding="UTF-8") %>%
     fromJSON(flatten=TRUE)
-  tmp$data
+  tmp$data$params
 
 }
 
