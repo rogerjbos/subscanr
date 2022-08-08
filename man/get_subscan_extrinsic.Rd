@@ -5,12 +5,12 @@
 \alias{get_subscan_extrinsic}
 \title{get_subscan_extrinsic}
 \usage{
-get_subscan_extrinsic(network = "Karura", extrinsic)
+get_subscan_extrinsic(network = "Karura", extrinsic_index)
 }
 \arguments{
 \item{network}{string indicating which Polkadot endpoint to use; defaults to 'Karura'.}
 
-\item{extrinsic}{string extrinsic id to pull.}
+\item{extrinsic_index}{string extrinsic id to pull.}
 }
 \value{
 list
@@ -20,7 +20,7 @@ Get all events for a specific extrinsic id from the Subscan api
 https://docs.api.subscan.io
 }
 \examples{
-get_subscan_extrinsic(extrinsic = '398539-2')
+get_subscan_extrinsic(extrinsic_index = '398539-2')
 
 }
 \author{

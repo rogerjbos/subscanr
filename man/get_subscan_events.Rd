@@ -3,8 +3,19 @@
 \encoding{UTF-8}
 \name{get_subscan_events}
 \alias{get_subscan_events}
+\alias{get_subscan_extrinsics}
 \title{get_subscan_events}
 \usage{
+get_subscan_extrinsics(
+  nobs = 500,
+  network = "Acala",
+  start_page = 1,
+  module = "",
+  call = "",
+  block = NULL,
+  extract = TRUE
+)
+
 get_subscan_events(
   nobs = 500,
   network = "Acala",
@@ -26,12 +37,20 @@ get_subscan_events(
 }
 \value{
 data.table
+
+data.table
 }
 \description{
 Get events from the Polkadot blockchain from the Subscan api
 https://docs.api.subscan.io
+
+Get events from the Polkadot blockchain from the Subscan api
+https://docs.api.subscan.io
 }
 \examples{
+tmp <- get_subscan_events(nobs = 111); dim(tmp$core_data)
+tmp <- get_subscan_events(nobs = 10, network = 'Karura', module = 'dex', call = 'Swap')
+
 tmp <- get_subscan_events(nobs = 111); dim(tmp$core_data)
 tmp <- get_subscan_events(nobs = 10, network = 'Karura', module = 'dex', call = 'Swap')
 
