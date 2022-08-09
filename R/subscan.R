@@ -265,9 +265,6 @@ extract_events <- function(core_data, params) {
     # add a human-readable date
     core_data[, time := as.POSIXct(block_timestamp, origin = "1970-01-01", tz = 'UTC')]
 
-    if (any(core_data$module_id %in% c('loans'))) {
-      loans_PositionUpdated_list <- list()
-    }
     if (any(core_data$module_id %in% c('incentives'))) {
       incentives_DepositDexShare_list <- list()
       incentives_WithdrawDexShare_list <- list()
@@ -335,11 +332,6 @@ extract_events <- function(core_data, params) {
             names(out) <- c("AuctionId","CurrencyId","CollateralAmount","WinnerId","PaymentAmount")
             auctionmanager_CollateralAuctionDealt_list[[i]] <- data.table(core_data[i], out)
           }
-        } else if (core_data[i, module_id] == "loans") {
-          out <- data.table(t(ti$value))
-          out[,2] <- ifelse(names(ti$value[[2]])=="Token", ti$value[[2]]$Token, names(ti$value[[2]]) %+% "://" %+%  ti$value[[2]][[1]])
-          names(out) <- c("AccountId","CurrencyId","DepositAmount","DebitAmount")
-          loans_PositionUpdated_list[[i]] <- data.table(core_data[i], out)
         } else if (core_data[i, module_id] == "treasury") {
           out <- data.table("BalanceOf" = ti$value[[1]])
           treasury_Deposited_list[[i]] <- data.table(core_data[i], out)
