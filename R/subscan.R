@@ -195,7 +195,7 @@ get_subscan_events <- function(nobs = 500, network = 'Acala', start_page = 1, mo
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
   # nobs = 500; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
   # nobs = 100; network = 'Acala'; module = 'homa'; call = ''; start_page = 1; extract = TRUE
-  # nobs = 100; network = 'Karura'; module = 'cdpengine'; call = 'LiquidateUnsafeCDP'; start_page = 1; extract = TRUE
+  # nobs = 100; network = 'Karura'; module = 'loans'; call = 'PositionUpdated'; start_page = 1; extract = TRUE
 
   api_host <- get_endpoint(network)
   # if (v2 == TRUE) {
@@ -213,13 +213,12 @@ get_subscan_events <- function(nobs = 500, network = 'Acala', start_page = 1, mo
   page_list <-list()
   params_list <-list()
   for (page in start_page:last_page) {
-    if (page %% 2 == 0) Sys.sleep(2)
+    # if (page %% 2 == 0) Sys.sleep(2)
+    while (as.numeric(POST("https://kusama.api.subscan.io/api/now", add_headers(api_header, 'Content-Type: application/json'))$headers[8]) ==0) {
+      Sys.sleep(1)
+    }
 
-    # if (is.null(block)) {
     body <- ' {"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ',"module": "' %+% module %+% '","call": "' %+% call %+% '"}'
-    # } else {
-    #   body <- ' {"row": ' %+% min(100, nobs) %+% ',"page": ' %+% page %+% ', "block_num": ' %+% as.numeric(block) %+% '}'
-    # }
     r <- POST(baseurl, body = body,
               add_headers(api_header, 'Content-Type: application/json'))
     while(r$status_code != 200) {
@@ -229,7 +228,6 @@ get_subscan_events <- function(nobs = 500, network = 'Acala', start_page = 1, mo
                 add_headers(api_header, 'Content-Type: application/json'))
     }
 
-    # stop_for_status(r)
     tmp <- content(r, as="text", encoding="UTF-8") %>%
       fromJSON(flatten=TRUE)
     core_data <- tmp$data$events %>%
@@ -267,6 +265,9 @@ extract_events <- function(core_data, params) {
     # add a human-readable date
     core_data[, time := as.POSIXct(block_timestamp, origin = "1970-01-01", tz = 'UTC')]
 
+    if (any(core_data$module_id %in% c('loans'))) {
+      loans_PositionUpdated_list <- list()
+    }
     if (any(core_data$module_id %in% c('incentives'))) {
       incentives_DepositDexShare_list <- list()
       incentives_WithdrawDexShare_list <- list()
@@ -334,9 +335,14 @@ extract_events <- function(core_data, params) {
             names(out) <- c("AuctionId","CurrencyId","CollateralAmount","WinnerId","PaymentAmount")
             auctionmanager_CollateralAuctionDealt_list[[i]] <- data.table(core_data[i], out)
           }
+        } else if (core_data[i, module_id] == "loans") {
+          out <- data.table(t(ti$value))
+          out[,2] <- ifelse(names(ti$value[[2]])=="Token", ti$value[[2]]$Token, names(ti$value[[2]]) %+% "://" %+%  ti$value[[2]][[1]])
+          names(out) <- c("AccountId","CurrencyId","DepositAmount","DebitAmount")
+          loans_PositionUpdated_list[[i]] <- data.table(core_data[i], out)
         } else if (core_data[i, module_id] == "treasury") {
-            out <- data.table("BalanceOf" = ti$value[[1]])
-            treasury_Deposited_list[[i]] <- data.table(core_data[i], out)
+          out <- data.table("BalanceOf" = ti$value[[1]])
+          treasury_Deposited_list[[i]] <- data.table(core_data[i], out)
         } else if (core_data[i, module_id] == "incentives") {
           if (core_data[i, event_id] == "DepositDexShare") {
             out <- data.table("AccountId"=ti$value[[1]],
