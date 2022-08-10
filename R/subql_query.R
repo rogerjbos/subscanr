@@ -420,16 +420,16 @@ getLoansPositions_acala_loan <- function(network, window, staging = FALSE) {
 
   # filter <- 'filter: {collateralId: {in: ["ACA","DOT","LDOT","KSM","LKSM"]}} '; endpage <- 2
   method <- "positions"
-  edges <- "ownerId collateralId txCount depositAmount debitAmount"
+  edges <- "owner {id} collateral {id} txCount depositAmount debitAmount updateAt updateAtBlock {id}"
   res <- get_graph(endpoint, method, edges, window, filter = "")
 
-  res[, collateralId := fixToken(collateralId)]
-  res <- merge(res, tokens, by.x='collateralId', by.y='Token')
+  res[, collateral.id := fixToken(collateral.id)]
+  res <- merge(res, tokens, by.x='collateral.id', by.y='Token')
   res[, Name := NULL]
 
-  res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
-  res[, depositAmount := as.numeric(depositAmount) / adj]
-  res[, debitAmount := as.numeric(debitAmount) / adj]
+  # res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
+  res[, depositAmount := as.numeric(depositAmount) / 10**as.numeric(decimals)]
+  res[, debitAmount := as.numeric(debitAmount) / 10**as.numeric(decimals)]
   res
 
 }

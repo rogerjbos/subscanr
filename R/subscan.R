@@ -196,6 +196,7 @@ get_subscan_events <- function(nobs = 500, network = 'Acala', start_page = 1, mo
   # nobs = 500; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
   # nobs = 100; network = 'Acala'; module = 'homa'; call = ''; start_page = 1; extract = TRUE
   # nobs = 100; network = 'Karura'; module = 'loans'; call = 'PositionUpdated'; start_page = 1; extract = TRUE
+  # nobs = 500; network = 'Karura'; module = 'loans'; call = ''; start_page = 1; extract = TRUE
 
   api_host <- get_endpoint(network)
   # if (v2 == TRUE) {
