@@ -352,7 +352,6 @@ getLoansCollateralParams_acala_loan <- function(network, staging = FALSE) {
   if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "collateralParams"
-  filter <- ""
   edges <- "collateral {id} maximumTotalDebitValue interestRatePerSec liquidationRatio
               liquidationPenalty requiredCollateralRatio"
   res <- get_graph(endpoint, method, edges, filter = "", window=1)
@@ -385,7 +384,6 @@ getLoansDailyPositions_acala_loan <- function(network, window, staging = FALSE) 
   if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "dailyPositions"
-  filter <- "timestamp"
   edges <- "id owner {id} collateral {id} depositAmount debitAmount depositVolumeUSD debitVolumeUSD
                depositChangedUSD debitChangedUSD debitExchangeRate timestamp txCount"
   res <- get_graph(endpoint, method, edges, window)
@@ -407,7 +405,34 @@ getLoansDailyPositions_acala_loan <- function(network, window, staging = FALSE) 
 
 }
 
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getLoansPositions_acala_loan <- function(network, window, staging = FALSE) {
 
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  # filter <- 'filter: {collateralId: {in: ["ACA","DOT","LDOT","KSM","LKSM"]}} '; endpage <- 2
+  method <- "positions"
+  edges <- "ownerId collateralId txCount depositAmount debitAmount"
+  res <- get_graph(endpoint, method, edges, window, filter = "")
+
+  res[, collateralId := fixToken(collateralId)]
+  res <- merge(res, tokens, by.x='collateralId', by.y='Token')
+  res[, Name := NULL]
+
+  res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
+  res[, depositAmount := as.numeric(depositAmount) / adj]
+  res[, debitAmount := as.numeric(debitAmount) / adj]
+  res
+
+}
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
@@ -423,7 +448,6 @@ getLoansCollateral_acala_loan <- function(network, window, staging = FALSE) {
   if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "collaterals"
-  filter <- ""
   edges <- "id name decimals depositAmount debitAmount txCount"
   res <- get_graph(endpoint, method, edges, window, filter = "")
 
@@ -440,7 +464,7 @@ getLoansCollateral_acala_loan <- function(network, window, staging = FALSE) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getLoansPositions_acala_loan <- function(network, window, staging = FALSE) {
+getLoansUpdatePosition_acala_loan <- function(network, window, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
@@ -451,17 +475,20 @@ getLoansPositions_acala_loan <- function(network, window, staging = FALSE) {
   }
   if (staging) endpoint <- endpoint %+% stagingStr
 
-  method <- "positions"
-  filter <- ""
-  edges <- "id owner {id} collateral {id} txCount depositAmount debitAmount updateAt updateAtBlock {id}"
-  res <- get_graph(endpoint, method, edges, window, filter = "")
+  method <- "updatePositions"
+  edges <- "id owner {id} collateral {id} collateralAdjustment debitAdjustment collateralAdjustmentUSD debitAdjustmentUSD price debitExchangeRate isDerived block {id} extrinsic {id} timestamp"
+  res <- get_graph(endpoint, method, edges, window, filter = "timestamp")
 
   stopifnot(nrow(res) > 0)
   res[, id := fixToken(id)]
   res <- merge(res, tokens, by.x = "collateral.id", by.y = "Token")
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
-  res[, depositAmount := as.numeric(depositAmount) / adj]
-  res[, debitAmount := as.numeric(debitAmount) / adj]
+  res[, collateralAdjustment := as.numeric(collateralAdjustment) / adj]
+  res[, debitAdjustment := as.numeric(debitAdjustment) / adj]
+  res[, collateralAdjustmentUSD := as.numeric(collateralAdjustmentUSD) / 10**18]
+  res[, debitAdjustmentUSD := as.numeric(debitAdjustmentUSD) / 10**18]
+  res[, price := as.numeric(price) / 10**18]
+
   res
 
 }
@@ -480,7 +507,6 @@ getLoansDailyCollateral_acala_loan <- function(network, window, staging = FALSE)
   if (staging) endpoint <- endpoint %+% stagingStr
 
   method <- "dailyCollaterals"
-  filter <- "timestamp"
   edges <- "collateral {id} depositAmount debitAmount depositVolumeUSD debitVolumeUSD
             depositChangedUSD debitChangedUSD debitExchangeRate timestamp txCount"
   res <- get_graph(endpoint, method, edges, window)
@@ -733,34 +759,6 @@ getAccountBalance_acala_token <- function(network, window, filter = '', endpage 
 
 }
 
-#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
-#' @export
-getPositions_acala_loan <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
-
-  if (tolower(network) == 'acala') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
-  } else if (tolower(network) == 'karura') {
-    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
-  } else {
-    stop("Network not found; must be one of 'acala' or 'karura'")
-  }
-  if (staging) endpoint <- endpoint %+% stagingStr
-
-  # filter <- 'filter: {collateralId: {in: ["ACA","DOT","LDOT","KSM","LKSM"]}} '; endpage <- 2
-  method <- "positions"
-  edges <- "ownerId collateralId txCount depositAmount debitAmount"
-  res <- get_graph(endpoint, method, edges, window, filter, endpage)
-
-  res[, collateralId := fixToken(collateralId)]
-  res <- merge(res, tokens, by.x='collateralId', by.y='Token')
-  res[, Name := NULL]
-
-  res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
-  res[, depositAmount := as.numeric(depositAmount) / adj]
-  res[, debitAmount := as.numeric(debitAmount) / adj]
-  res
-
-}
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
