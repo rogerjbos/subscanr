@@ -666,6 +666,8 @@ getLiquidateUnsafeCDP_acala_loan <- function(network, window, staging = FALSE) {
 
 }
 
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
 getAccounts_acala <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
 
   # network="acala"; window = 1; filter = ''; endpage = 2
@@ -686,6 +688,8 @@ getAccounts_acala <- function(network, window, filter = '', endpage = 2000, stag
 
 }
 
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
 getRewards_acala_incentives <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
 
   # network="acala"; window = 1; filter = ''; endpage = 2
