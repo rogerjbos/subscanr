@@ -249,6 +249,8 @@ get_graph <- function(endpoint, method, edges, window, filter = "timestamp", end
     }')
     result <- cli$exec(qry$queries[[method]])  %>%
       fromJSON(flatten=TRUE)
+    result
+
     cursor <- result$data$query[[method]]$pageInfo$endCursor
     res <- as.data.table(result$data$query[[method]]$edges)
     if (nrow(res) == 0) break
@@ -665,6 +667,51 @@ getLiquidateUnsafeCDP_acala_loan <- function(network, window, staging = FALSE) {
 
 }
 
+getAccounts_acala <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
+
+  # network="acala"; window = 1; filter = ''; endpage = 2
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-subql"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-subql"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "accounts"
+  edges <- "id txCount createAtBlockId"
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+  res
+
+}
+
+getRewards_acala_incentives <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
+
+  # network="acala"; window = 1; filter = ''; endpage = 2
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-incentives"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-incentives"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "claimRewards"
+  edges <- "id addressId tokenId pool actualAmount deductionAmount blockId extrinsicId timestamp"
+  filter <- ' filter: {blockId: { lessThan: "1639493", greaterThan: "1638215" }}'
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+  res[, tokenId := fixToken(tokenId)]
+  res <- merge(res, tokens, by.x = "tokenId", by.y="Token")
+  res[, actualAmount := as.numeric(actualAmount) / 10**as.numeric(decimals)]
+  res[, deductionAmount := as.numeric(deductionAmount) / 10**as.numeric(decimals)]
+  res
+
+}
+
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
@@ -873,7 +920,7 @@ getRedeemByFastMatch_acala_homa <- function(network, window, filter = '', endpag
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getAccounts_acala <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
+getRewards_acala <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
 
   # network="acala"; window = 1; filter = ''; endpage = 2
 
@@ -886,9 +933,19 @@ getAccounts_acala <- function(network, window, filter = '', endpage = 2000, stag
   }
   if (staging) endpoint <- endpoint %+% stagingStr
 
-  method <- "accounts"
-  edges <- "id txCount createAtBlockId"
+  method <- "events"
+  edges <- "id data"
+  filter <- ' filter: {blockNumber: { lessThan: "1639493", greaterThan: "1638215" } section: { equalTo: "incentives" } method: { equalTo: "ClaimRewards" }}'
   res <- get_graph(endpoint, method, edges, window, filter, endpage)
+
+  data_list <- list()
+  for (ii in 1:nrow(res)) {
+    data_list[[ii]] <- res[ii]$data[[1]]$value %>% t %>% as.data.table
+  }
+  data <- rbindlist(data_list) %>%
+    setnames(c("addressId","poolId","tokenId","reward","unknown"))
+  res[, data := NULL]
+  res <- cbind(res, data)
   res
 
 }
