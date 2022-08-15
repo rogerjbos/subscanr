@@ -249,7 +249,6 @@ get_graph <- function(endpoint, method, edges, window, filter = "timestamp", end
     }')
     result <- cli$exec(qry$queries[[method]])  %>%
       fromJSON(flatten=TRUE)
-    result
 
     cursor <- result$data$query[[method]]$pageInfo$endCursor
     res <- as.data.table(result$data$query[[method]]$edges)
