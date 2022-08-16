@@ -67,11 +67,21 @@ fixToken <- function(x) {
   x <- gsub('fa%3A%2F%2F2', 'QTZ', x)
   x <- gsub("{'ForeignAsset': 2}", 'QTZ', x, perl = TRUE)
 
-  x <- gsub('fa://3', 'MOVRZ', x)
-  x <- gsub('ForeignAsset://3', 'MOVR', x)
+  # x <- gsub('fa://3', 'MOVRZ', x)
+  # x <- gsub('ForeignAsset://3', 'MOVR', x)
+  # x <- gsub('fa%3A%2F%2F3', 'MOVR', x)
 
-  x <- gsub('fa://4', 'HKO', x)
-  x <- gsub('ForeignAsset://4', 'HKO', x)
+  # x <- gsub('fa://4', 'HKO', x)
+  # x <- gsub('ForeignAsset://4', 'HKO', x)
+  # x <- gsub('fa%3A%2F%2F4', 'HKO', x)
+  #
+  x <- gsub('fa://3', 'iBTC', x)
+  x <- gsub('ForeignAsset://3', 'iBTC', x)
+  x <- gsub('fa%3A%2F%2F3', 'iBTC', x)
+
+  x <- gsub('fa://4', 'INTR', x)
+  x <- gsub('ForeignAsset://4', 'INTR', x)
+  x <- gsub('fa%3A%2F%2F4', 'INTR', x)
 
   x <- gsub('fa://5', 'CSM', x)
   x <- gsub('ForeignAsset://5', 'CSM', x)
