@@ -708,6 +708,8 @@ getRewards_acala_incentives <- function(network, window, filter = '', endpage = 
   filter <- ' filter: {blockId: { lessThan: "1639493", greaterThan: "1638215" }}'
   res <- get_graph(endpoint, method, edges, window, filter, endpage)
   res[, tokenId := fixToken(tokenId)]
+  res[, pool := fixToken(pool)]
+
   res <- merge(res, tokens, by.x = "tokenId", by.y="Token")
   res[, actualAmount := as.numeric(actualAmount) / 10**as.numeric(decimals)]
   res[, deductionAmount := as.numeric(deductionAmount) / 10**as.numeric(decimals)]

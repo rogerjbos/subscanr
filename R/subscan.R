@@ -194,9 +194,10 @@ get_subscan_events <- function(nobs = 500, network = 'Acala', start_page = 1, mo
 
   # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
   # nobs = 500; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
-  # nobs = 100; network = 'Acala'; module = 'homa'; call = ''; start_page = 1; extract = TRUE
+  # nobs = 100; network = 'Acala'; module = 'incentives'; call = ''; start_page = 1; extract = TRUE
   # nobs = 100; network = 'Karura'; module = 'loans'; call = 'PositionUpdated'; start_page = 1; extract = TRUE
   # nobs = 500; network = 'Karura'; module = 'loans'; call = ''; start_page = 1; extract = TRUE
+  # nobs = 100; network = 'Acala'; module = 'incentives'; call = ''; start_page = 1; extract = TRUE
 
   api_host <- get_endpoint(network)
   # if (v2 == TRUE) {
@@ -358,14 +359,17 @@ extract_events <- function(core_data, params) {
             } else {
               id1 <- ti$value[[2]][[1]][[1]][[2]]
             }
+            id0 <- ifelse(names(id0)=="Token", id0$Token, names(id0) %+% "://" %+%  id0[[1]])
+            id1 <- ifelse(names(id1)=="Token", id1$Token, names(id1) %+% "://" %+%  id1[[1]])
+            rewardToken <- ifelse(names(ti$value[[3]])=="Token", ti$value[[3]]$Token, names(ti$value[[3]]) %+% "://" %+%  ti$value[[3]][[1]][[1]])
+
             out <- data.table("AccountId"=ti$value[[1]],
                               "type"= names(ti$value[[2]]),
                               "token0Id"=id0,
                               "token1Id"=id1,
-                              "rewardToken"=ti$value[[3]][[1]],
-                              "amount0"=ti$value[[4]],
-                              "amount1"=ti$value[[5]])
-
+                              "rewardToken"=rewardToken,
+                              "actualAmount"=ti$value[[4]],
+                              "deductionAmount"=ti$value[[5]])
             incentives_ClaimRewards_list[[i]] <- data.table(core_data[i], out)
           }
 
