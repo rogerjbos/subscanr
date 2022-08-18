@@ -383,7 +383,7 @@ getLoansCollateralParams_acala_loan <- function(network, staging = FALSE) {
 
   method <- "collateralParams"
   edges <- "collateral {id} maximumTotalDebitValue interestRatePerSec liquidationRatio
-              liquidationPenalty requiredCollateralRatio updateAt updateAtBlock"
+              liquidationPenalty requiredCollateralRatio updateAt updateAtBlockId"
   res <- get_graph(endpoint, method, edges, filter = "", window=1)
 
   # Replace foreign assets
