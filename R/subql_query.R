@@ -159,15 +159,19 @@ tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("ARIS","polaris-dao", 8),
                               c("ARIS2","polaris-dao", 8),
                               c("AUSD","acala-dollar", 12),
+                              c("ASTR","astar", 18),
                               c("BNC","bifrost-native-coin", 12),
                               c("BSX","basilisk", 12),
                               c("CASH","compound-cash", 8),
                               c("CRAB","darwinia-crab-network", 18),
                               c("CSM","crust-storage-market", 12),
+                              c("DAI","dai-stablecoin-portal", 18),
                               c("DOT","polkadot", 10),
                               c("DOT (on Homa)","staked polkadot", 10),
+                              c("EQ","equilibrium", 9),
                               c("EQD","equilibrium-usd", 9),
                               c("GENS","genshiro", 9),
+                              c("GLMR","moonbeam", 18),
                               c("HKO","heiko", 12),
                               c("KAR","karura", 12),
                               c("KBTC","kintsugi-btc", 8),
@@ -177,20 +181,35 @@ tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("KSM","kusama", 12),
                               c("KSM (on Homa)","staked-kusama", 12),
                               c("KUSD","karura-dollar", 12),
+                              c("iBTC","inter-btc", 8),
+                              c("INTR","interlay", 10),
                               c("LCDOT","liquid-crowdloan-dot", 10),
                               c("LDOT","liquid-dot", 10),
                               c("LKSM","liquid-ksm", 12),
+                              c("LT","listen", 12),
+                              c("LIT","litmus", 12),
                               c("MOVR","moonriver", 18),
                               c("NEER","metaverse-network-pioneer", 18),
+                              c("PARA","parallel", 12),
+                              c("PCHU","pichiu-portal", 18),
                               c("PHA","pha", 12),
                               c("QTZ","quartz", 18),
                               c("RMRK","rmrk", 10),
                               c("RENBTC","renbtc", 8),
                               c("TAI","tai", 12),
+                              c("SDN","shiden", 18),
+                              c("TAP","tapio", 12),
+                              c("TUR","turing", 10),
+                              c("tDOT","tapio-dot", 10),
                               c("taiKSM","tai-ksm", 12),
                               c("TEER","integritee-trusted-execution-environment", 12),
                               c("USDC","usd-coin", 6),
+                              c("USDT","tether-usd", 6),
+                              c("USDCet","usd-coin-portal-from-ethereum", 6),
                               c("USDT","tether", 6),
+                              c("WAUSD","acala-dollar-portal", 12),
+                              c("WETH","wrapped-ether", 18),
+                              c("WBTC","wrapped-bitcoin", 8),
                               c("VSKSM","bifrost-voucher-slot-ksm", 12)))
 setnames(tokens, c("Token","Name","decimals"))
 try(tokens[, divisor := (as.numeric(substr(as.character(1e20), 1, as.numeric(decimals) + 1))), by = Token], silent = TRUE)
@@ -201,8 +220,8 @@ try(tokens[, divisor := (as.numeric(substr(as.character(1e20), 1, as.numeric(dec
 #' @export
 get_query <- function(url, query) {
 
-  # url <- 'https://api.subquery.network/sq/AcalaNetwork/karura-tokens'
-  # query <- 'query { accountBalances (first: 5) { nodes { id accountId tokenId total } } }'
+  # url <- 'https://api.subquery.network/sq/AcalaNetwork/karura-loan'
+  # query <- 'query { collateralParamsHistories { nodes { collateral {id} maximumTotalDebitValue interestRatePerSec liquidationRatio liquidationPenalty requiredCollateralRatio startAtBlockId endAtBlockId startAt endAt } } }'
 
   method = "test"
   cli <- GraphqlClient$new(url)
@@ -364,7 +383,40 @@ getLoansCollateralParams_acala_loan <- function(network, staging = FALSE) {
 
   method <- "collateralParams"
   edges <- "collateral {id} maximumTotalDebitValue interestRatePerSec liquidationRatio
-              liquidationPenalty requiredCollateralRatio"
+              liquidationPenalty requiredCollateralRatio updateAt updateAtBlock"
+  res <- get_graph(endpoint, method, edges, filter = "", window=1)
+
+  # Replace foreign assets
+  res[, collateral.id := fixToken(collateral.id)]
+  res <- merge(res, tokens, by.x='collateral.id', by.y='Token')
+
+  res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
+  res[, maximumTotalDebitValue := as.numeric(maximumTotalDebitValue) / as.numeric(adj)]
+  res[, liquidationRatio := as.numeric(liquidationRatio) / 1e18]
+  res[, liquidationPenalty := as.numeric(liquidationPenalty) / 1e18]
+  res[, requiredCollateralRatio := as.numeric(requiredCollateralRatio) / 1e18]
+  res[, APR := (as.numeric(interestRatePerSec) / 1e18 + 1) ** (365 * 86400) - 1]
+  res
+
+}
+
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+getLoansCollateralParamsHistory_acala_loan <- function(network, staging = FALSE) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-loan"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "collateralParamsHistories"
+  edges <- "collateral {id} maximumTotalDebitValue interestRatePerSec liquidationRatio
+              liquidationPenalty requiredCollateralRatio
+              startAtBlockId endAtBlockId startAt endAt"
   res <- get_graph(endpoint, method, edges, filter = "", window=1)
 
   # Replace foreign assets
@@ -721,8 +773,8 @@ getRewards_acala_incentives <- function(network, window, filter = '', endpage = 
   res[, pool := fixToken(pool)]
 
   res <- merge(res, tokens, by.x = "tokenId", by.y="Token")
-  res[, actualAmount := as.numeric(actualAmount) / 10**as.numeric(decimals)]
-  res[, deductionAmount := as.numeric(deductionAmount) / 10**as.numeric(decimals)]
+  # res[, actualAmount := as.numeric(actualAmount) / 10**as.numeric(decimals)]
+  # res[, deductionAmount := as.numeric(deductionAmount) / 10**as.numeric(decimals)]
   res
 
 }
@@ -1015,7 +1067,7 @@ getPoolStats_acala <- function(network, window = 1, staging = FALSE) {
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getPoolStats_acala_dex <- function(network, window = 1, staging = FALSE) {
+getPoolStats_acala_dex <- function(network, window = 1, filter = '', staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
@@ -1040,7 +1092,7 @@ getPoolStats_acala_dex <- function(network, window = 1, staging = FALSE) {
                     dailyTradeVolumeUSD
                 }
               }"
-  res <- get_graph(endpoint, method, edges, window=1, filter = '')
+  res <- get_graph(endpoint, method, edges, window=1, filter = filter)
 
   # Replace foreign assets
   res[, token0.name := fixToken(token0.name)]
