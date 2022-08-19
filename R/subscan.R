@@ -4,6 +4,7 @@ library(httr)
 library(jsonlite)
 library(dplyr)
 library(ghql)
+library(stringi)
 x <- GraphqlClient$new()
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}

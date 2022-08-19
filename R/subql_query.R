@@ -50,82 +50,79 @@ myAmount <- function(path) {
 `%+%` <- function(a, b) paste0(a, b)
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
-#' @export
-fixToken <- function(x) {
-  x <- gsub('fa://0', 'RMRK', x)
-  x <- gsub('ForeignAsset://0', 'RMRK', x)
-  x <- gsub('fa%3A%2F%2F0', 'RMRK', x)
-  x <- gsub("{'ForeignAsset': 0}", 'RMRK', x, perl = TRUE)
+fixToken <- function(x, chain = "Karura") {
 
-  x <- gsub('fa://1', 'ARIS', x)
-  x <- gsub('ForeignAsset://1', 'ARIS', x)
-  x <- gsub('fa%3A%2F%2F1', 'ARIS', x)
-  x <- gsub("{'ForeignAsset': 1}", 'ARIS', x, perl = TRUE)
+  fa0 <- ifelse(tolower(chain) == 'Karura', 'RMRK', 'GLMR')
+  x <- stri_replace_all_regex(x, pattern=c('fa://0', 'ForeignAsset://0', 'fa%3A%2F%2F0', "\\{'ForeignAsset': 0\\}"), replacement=fa0, vectorize=FALSE)
 
-  x <- gsub('fa://2', 'QTZ', x)
-  x <- gsub('ForeignAsset://2', 'QTZ', x)
-  x <- gsub('fa%3A%2F%2F2', 'QTZ', x)
-  x <- gsub("{'ForeignAsset': 2}", 'QTZ', x, perl = TRUE)
+  fa1 <- ifelse(tolower(chain) == 'Karura', 'ARIS', 'PARA')
+  x <- stri_replace_all_regex(x, pattern=c('fa://1', 'ForeignAsset://1', 'fa%3A%2F%2F1', "\\{'ForeignAsset': 1\\}"), replacement=fa1, vectorize=FALSE)
 
-  # x <- gsub('fa://3', 'MOVRZ', x)
-  # x <- gsub('ForeignAsset://3', 'MOVR', x)
-  # x <- gsub('fa%3A%2F%2F3', 'MOVR', x)
+  fa2 <- ifelse(tolower(chain) == 'Karura', 'QTZ', 'ASTR')
+  x <- stri_replace_all_regex(x, pattern=c('fa://2', 'ForeignAsset://2', 'fa%3A%2F%2F2', "\\{'ForeignAsset': 2\\}"), replacement=fa2, vectorize=FALSE)
 
-  # x <- gsub('fa://4', 'HKO', x)
-  # x <- gsub('ForeignAsset://4', 'HKO', x)
-  # x <- gsub('fa%3A%2F%2F4', 'HKO', x)
-  #
-  x <- gsub('fa://3', 'iBTC', x)
-  x <- gsub('ForeignAsset://3', 'iBTC', x)
-  x <- gsub('fa%3A%2F%2F3', 'iBTC', x)
+  fa3 <- ifelse(tolower(chain) == 'Karura', 'MOVR', 'iBTC')
+  x <- stri_replace_all_regex(x, pattern=c('fa://3', 'ForeignAsset://3', 'fa%3A%2F%2F3', "\\{'ForeignAsset': 3\\}"), replacement=fa3, vectorize=FALSE)
 
-  x <- gsub('fa://4', 'INTR', x)
-  x <- gsub('ForeignAsset://4', 'INTR', x)
-  x <- gsub('fa%3A%2F%2F4', 'INTR', x)
+  fa4 <- ifelse(tolower(chain) == 'Karura', 'HKO', 'INTR')
+  x <- stri_replace_all_regex(x, pattern=c('fa://4', 'ForeignAsset://4', 'fa%3A%2F%2F4', "\\{'ForeignAsset': 4\\}"), replacement=fa4, vectorize=FALSE)
 
-  x <- gsub('fa://5', 'CSM', x)
-  x <- gsub('ForeignAsset://5', 'CSM', x)
-  x <- gsub('fa%3A%2F%2F5', 'CSM', x)
-  x <- gsub("{'ForeignAsset': 5}", 'CSM', x, perl = TRUE)
+  fa5 <- ifelse(tolower(chain) == 'Karura', 'CSM', 'WBTC')
+  x <- stri_replace_all_regex(x, pattern=c('fa://5', 'ForeignAsset://5', 'fa%3A%2F%2F5', "\\{'ForeignAsset': 5\\}"), replacement=fa5, vectorize=FALSE)
 
-  x <- gsub('fa://6', 'KICO', x)
-  x <- gsub('ForeignAsset://6', 'KICO', x)
+  fa6 <- ifelse(tolower(chain) == 'Karura', 'KICO', 'WETH')
+  x <- stri_replace_all_regex(x, pattern=c('fa://6', 'ForeignAsset://6', 'fa%3A%2F%2F6', "\\{'ForeignAsset': 6\\}"), replacement=fa6, vectorize=FALSE)
 
-  x <- gsub('fa://7', 'USDT', x)
-  x <- gsub('ForeignAsset://7', 'USDT', x)
+  fa7 <- ifelse(tolower(chain) == 'Karura', 'USDT', 'EQ')
+  x <- stri_replace_all_regex(x, pattern=c('fa://7', 'ForeignAsset://7', 'fa%3A%2F%2F7', "\\{'ForeignAsset': 7\\}"), replacement=fa7, vectorize=FALSE)
 
-  x <- gsub('fa://8', 'TEER', x)
-  x <- gsub('ForeignAsset://8', 'TEER', x)
+  fa8 <- ifelse(tolower(chain) == 'Karura', 'TEER', 'EQD')
+  x <- stri_replace_all_regex(x, pattern=c('fa://8', 'ForeignAsset://8', 'fa%3A%2F%2F8', "\\{'ForeignAsset': 8\\}"), replacement=fa8, vectorize=FALSE)
 
-  x <- gsub('fa://9', 'NEER', x)
-  x <- gsub('ForeignAsset://9', 'NEER', x)
+  fa9 <- ifelse(tolower(chain) == 'Karura', 'NEER', 'PHA')
+  x <- stri_replace_all_regex(x, pattern=c('fa://9', 'ForeignAsset://9', 'fa%3A%2F%2F9', "\\{'ForeignAsset': 9\\}"), replacement=fa9, vectorize=FALSE)
 
-  x <- gsub('fa://10', 'KMA', x)
-  x <- gsub('ForeignAsset://10', 'KMA', x)
+  fa10 <- ifelse(tolower(chain) == 'Karura', 'KMA', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://10', 'ForeignAsset://10', 'fa%3A%2F%2F10', "\\{'ForeignAsset': 10\\}"), replacement=fa10, vectorize=FALSE)
 
-  x <- gsub('fa://11', 'BSX', x)
-  x <- gsub('ForeignAsset://11', 'BSX', x)
+  fa11 <- ifelse(tolower(chain) == 'Karura', 'BSX', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://11', 'ForeignAsset://11', 'fa%3A%2F%2F11', "\\{'ForeignAsset': 11\\}"), replacement=fa11, vectorize=FALSE)
 
-  x <- gsub('fa://12', 'AIR', x)
-  x <- gsub('ForeignAsset://12', 'AIR', x)
+  fa12 <- ifelse(tolower(chain) == 'Karura', 'AIR', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://12', 'ForeignAsset://12', 'fa%3A%2F%2F12', "\\{'ForeignAsset': 12\\}"), replacement=fa12, vectorize=FALSE)
 
-  x <- gsub('fa://13', 'CRAB', x)
-  x <- gsub('ForeignAsset://13', 'CRAB', x)
+  fa13 <- ifelse(tolower(chain) == 'Karura', 'CRAB', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://13', 'ForeignAsset://13', 'fa%3A%2F%2F13', "\\{'ForeignAsset': 13\\}"), replacement=fa13, vectorize=FALSE)
 
-  x <- gsub('fa://14', 'GENS', x)
-  x <- gsub('ForeignAsset://14', 'GENS', x)
+  fa14 <- ifelse(tolower(chain) == 'Karura', 'GENS', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://14', 'ForeignAsset://14', 'fa%3A%2F%2F14', "\\{'ForeignAsset': 14\\}"), replacement=fa14, vectorize=FALSE)
 
-  x <- gsub('fa://15', 'EQD', x)
-  x <- gsub('ForeignAsset://15', 'EQD', x)
+  fa15 <- ifelse(tolower(chain) == 'Karura', 'EQD', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://15', 'ForeignAsset://15', 'fa%3A%2F%2F15', "\\{'ForeignAsset': 15\\}"), replacement=fa15, vectorize=FALSE)
 
-  x <- gsub('lc://13', 'LCDOT', x)
-  x <- gsub('LiquidCrowdloan://13', 'LCDOT', x)
-  x <- gsub('lc%3A%2F%2F13', 'LCDOT', x)
+  fa16 <- ifelse(tolower(chain) == 'Karura', 'TUR', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://16', 'ForeignAsset://16', 'fa%3A%2F%2F16', "\\{'ForeignAsset': 16\\}"), replacement=fa16, vectorize=FALSE)
 
-  x <- gsub('sa://0', 'taiKSM', x)
-  x <- gsub('StableAssetPoolToken://0', 'taiKSM', x)
-  x <- gsub('sa%3A%2F%2F0', 'taiKSM', x)
-  x <- gsub("{'StableAssetPoolToken': 0}", 'taiKSM', x, perl = TRUE)
+  fa17 <- ifelse(tolower(chain) == 'Karura', 'PCHU', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://17', 'ForeignAsset://17', 'fa%3A%2F%2F17', "\\{'ForeignAsset': 17\\}"), replacement=fa17, vectorize=FALSE)
+
+  fa18 <- ifelse(tolower(chain) == 'Karura', 'SDN', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://18', 'ForeignAsset://18', 'fa%3A%2F%2F18', "\\{'ForeignAsset': 18\\}"), replacement=fa18, vectorize=FALSE)
+
+  fa19 <- ifelse(tolower(chain) == 'Karura', 'LT', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://19', 'ForeignAsset://19', 'fa%3A%2F%2F19', "\\{'ForeignAsset': 19\\}"), replacement=fa19, vectorize=FALSE)
+
+  fa20 <- ifelse(tolower(chain) == 'Karura', 'LIT', '')
+  x <- stri_replace_all_regex(x, pattern=c('fa://20', 'ForeignAsset://20', 'fa%3A%2F%2F20', "\\{'ForeignAsset': 20\\}"), replacement=fa20, vectorize=FALSE)
+
+  lc13 <- 'LCDOT'
+  x <- stri_replace_all_regex(x, pattern=c('lc://13', 'LiquidCrowdloan://13', 'lc%3A%2F%2F13', "\\{'LiquidCrowdloan': 13\\}"), replacement=lc13, vectorize=FALSE)
+
+  sa0 <- ifelse(tolower(chain) == 'Karura', 'taiKSM', 'tDOT')
+  x <- stri_replace_all_regex(x, pattern=c('sa://0', 'StableAssetPoolToken://0', 'sa%3A%2F%2S0', "\\{'StableAssetPoolToken': 0\\}"), replacement=sa0, vectorize=FALSE)
+
+  sa1 <- ifelse(tolower(chain) == 'Karura', '3USD', '')
+  x <- stri_replace_all_regex(x, pattern=c('sa://1', 'StableAssetPoolToken://1', 'sa%3A%2F%2S1', "\\{'StableAssetPoolToken': 1\\}"), replacement=sa1, vectorize=FALSE)
 
   x <- gsub("{'Token': 'BNC'}", 'BNC', x, perl = TRUE)
   x <- gsub("{'Token': 'KAR'}", 'KAR', x, perl = TRUE)
@@ -137,14 +134,10 @@ fixToken <- function(x) {
   x <- gsub("{'Token': 'LKSM'}", 'LKSM', x, perl = TRUE)
   x <- gsub("{'Token': 'PHA'}", 'PHA', x, perl = TRUE)
   x <- gsub("{'Token': 'TAI'}", 'TAI', x, perl = TRUE)
-
-  x <- gsub("{'LiquidCrowdloan': 13}", 'LCDOT', x, perl = TRUE)
   x <- gsub("{'Token': 'ACA'}", 'ACA', x, perl = TRUE)
   x <- gsub("{'Token': 'AUSD'}", 'AUSD', x, perl = TRUE)
   x <- gsub("{'Token': 'DOT'}", 'DOT', x, perl = TRUE)
   x <- gsub("{'Token': 'LDOT'}", 'LDOT', x, perl = TRUE)
-
-
   x <- gsub("{'DexShare' ", 'lp:', x, perl = TRUE)
   x <- gsub("}", '', x, perl = TRUE)
 }
@@ -198,6 +191,7 @@ tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("RENBTC","renbtc", 8),
                               c("TAI","tai", 12),
                               c("SDN","shiden", 18),
+                              c("tDOT","tapio-DOT", 10),
                               c("TAP","tapio", 12),
                               c("TUR","turing", 10),
                               c("tDOT","tapio-dot", 10),
@@ -213,7 +207,6 @@ tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("VSKSM","bifrost-voucher-slot-ksm", 12)))
 setnames(tokens, c("Token","Name","decimals"))
 try(tokens[, divisor := (as.numeric(substr(as.character(1e20), 1, as.numeric(decimals) + 1))), by = Token], silent = TRUE)
-
 
 # Query function for very simple queries
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
@@ -381,7 +374,7 @@ getLoansCollateralParams_acala_loan <- function(network, staging = FALSE) {
   }
   if (staging) endpoint <- endpoint %+% stagingStr
 
-  method <- "collateralParams"
+    method <- "collateralParams"
   edges <- "collateral {id} maximumTotalDebitValue interestRatePerSec liquidationRatio
               liquidationPenalty requiredCollateralRatio updateAt updateAtBlockId"
   res <- get_graph(endpoint, method, edges, filter = "", window=1)
@@ -418,6 +411,11 @@ getLoansCollateralParamsHistory_acala_loan <- function(network, staging = FALSE)
               liquidationPenalty requiredCollateralRatio
               startAtBlockId endAtBlockId startAt endAt"
   res <- get_graph(endpoint, method, edges, filter = "", window=1)
+
+  # res[, startAtBlockId := as.numeric(startAtBlockId)]
+  # setorder(res, "startAtBlockId")
+  # res[collateral.id=="KSM", 1:7]
+  # sort(unique(res$collateral.id))
 
   # Replace foreign assets
   res[, collateral.id := fixToken(collateral.id)]
