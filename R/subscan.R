@@ -254,13 +254,13 @@ get_subscan_events <- function(nobs = 500, network = 'Acala', start_page = 1, mo
   core_data <- rbindlist(page_list)
   params <- do.call("c", params_list)
 
-  if (extract) return(extract_events(core_data, params))
+  if (extract) return(extract_events(core_data, params, network))
 
   list(core_data = core_data, params = params)
 
 }
 
-extract_events <- function(core_data, params) {
+extract_events <- function(core_data, params, network) {
 # core_data <- tmp$core_data; params <- tmp$params
 
   if (nrow(core_data) > 0) {
@@ -478,10 +478,10 @@ extract_events <- function(core_data, params) {
 
             names(out) <- c("account","token0","token1","token2","token3","amount0","amount1","amount2","amount3")
 
-            out[, token0 := fixToken(token0)]
-            out[, token1 := fixToken(token1)]
-            out[, token2 := fixToken(token2)]
-            out[, token3 := fixToken(token3)]
+            out[, token0 := fixToken(token0, network)]
+            out[, token1 := fixToken(token1, network)]
+            out[, token2 := fixToken(token2, network)]
+            out[, token3 := fixToken(token3, network)]
             # Normalize pairs
             out[, pair0 := paste0(token0 %+% ":" %+% token1)]
             out[token1 < token0, pair0 := paste0(token1 %+% ":" %+% token0)]

@@ -14,16 +14,16 @@ stagingStr <- "__QWNhb"
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-myPath <- function(path) {
+myPath <- function(path, chain = 'Karura') {
   # path <- res$tradePath
   path0 <- list()
   path1 <- list()
   path2 <- list()
   path <- strsplit(path, ",")
   for (i in 1:length(path)) {
-    path0[[i]] <- mysort(fixToken(path[[i]][1]), fixToken(path[[i]][2]))
-    path1[[i]] <- ifelse(path[[i]][3] == "", "", mysort(fixToken(path[[i]][2]), fixToken(path[[i]][3])))
-    path2[[i]] <- ifelse(path[[i]][4] == "", "", mysort(fixToken(path[[i]][3]), fixToken(path[[i]][4])))
+    path0[[i]] <- mysort(fixToken(path[[i]][1], chain), fixToken(path[[i]][2], chain))
+    path1[[i]] <- ifelse(path[[i]][3] == "", "", mysort(fixToken(path[[i]][2], chain), fixToken(path[[i]][3], chain)))
+    path2[[i]] <- ifelse(path[[i]][4] == "", "", mysort(fixToken(path[[i]][3], chain), fixToken(path[[i]][4], chain)))
   }
   list(path0=path0, path1=path1, path2=path2)
 }
@@ -314,8 +314,8 @@ getDailyPools_acala_dex <- function(network, window, staging = FALSE) {
            c("token0Id", "token1Id", "volumeUSD", "tvlUSD", "feeUSD"))
 
   # Replace foreign assets
-  res[, token0Id := fixToken(token0Id)]
-  res[, token1Id := fixToken(token1Id)]
+  res[, token0Id := fixToken(token0Id, network)]
+  res[, token1Id := fixToken(token1Id, network)]
 
   # Normalize pairs
   res[, pair := paste0(token0Id %+% ":" %+% token1Id)]
@@ -351,8 +351,8 @@ getLiquidity_acala <- function(endpoint, window, staging = FALSE) {
   setorder(res, date)
 
   # Replace foreign assets
-  res[, token0Id := fixToken(token0Id)]
-  res[, token1Id := fixToken(token1Id)]
+  res[, token0Id := fixToken(token0Id, network)]
+  res[, token1Id := fixToken(token1Id, network)]
 
   # Normalize pairs
   res[, pair := paste0(token0Id %+% ":" %+% token1Id)]
@@ -380,7 +380,7 @@ getLoansCollateralParams_acala_loan <- function(network, staging = FALSE) {
   res <- get_graph(endpoint, method, edges, filter = "", window=1)
 
   # Replace foreign assets
-  res[, collateral.id := fixToken(collateral.id)]
+  res[, collateral.id := fixToken(collateral.id, network)]
   res <- merge(res, tokens, by.x='collateral.id', by.y='Token')
 
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
@@ -418,7 +418,7 @@ getLoansCollateralParamsHistory_acala_loan <- function(network, staging = FALSE)
   # sort(unique(res$collateral.id))
 
   # Replace foreign assets
-  res[, collateral.id := fixToken(collateral.id)]
+  res[, collateral.id := fixToken(collateral.id, network)]
   res <- merge(res, tokens, by.x='collateral.id', by.y='Token')
 
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
@@ -450,7 +450,7 @@ getLoansDailyPositions_acala_loan <- function(network, window, staging = FALSE) 
   res <- get_graph(endpoint, method, edges, window)
 
   res[, Date := as.Date(timestamp)]
-  res[, collateral.id := fixToken(collateral.id)]
+  res[, collateral.id := fixToken(collateral.id, network)]
   res <- merge(res, subscanr::tokens, by.x='collateral.id', by.y='Token', allow.cartesian=TRUE)
 
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
@@ -484,7 +484,7 @@ getLoansPositions_acala_loan <- function(network, window, staging = FALSE) {
   edges <- "owner {id} collateral {id} txCount depositAmount debitAmount updateAt updateAtBlock {id}"
   res <- get_graph(endpoint, method, edges, window, filter = "")
 
-  res[, collateral.id := fixToken(collateral.id)]
+  res[, collateral.id := fixToken(collateral.id, network)]
   res <- merge(res, tokens, by.x='collateral.id', by.y='Token')
   res[, Name := NULL]
 
@@ -513,7 +513,7 @@ getLoansCollateral_acala_loan <- function(network, window, staging = FALSE) {
   res <- get_graph(endpoint, method, edges, window, filter = "")
 
   stopifnot(nrow(res) > 0)
-  res[, id := fixToken(id)]
+  res[, id := fixToken(id, network)]
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
   res[, depositAmount := as.numeric(depositAmount) / adj]
   res[, debitAmount := as.numeric(debitAmount) / adj]
@@ -541,7 +541,7 @@ getLoansUpdatePosition_acala_loan <- function(network, window, staging = FALSE) 
   res <- get_graph(endpoint, method, edges, window, filter = "timestamp")
 
   stopifnot(nrow(res) > 0)
-  res[, id := fixToken(id)]
+  res[, id := fixToken(id, network)]
   res <- merge(res, tokens, by.x = "collateral.id", by.y = "Token")
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
   res[, collateralAdjustment := as.numeric(collateralAdjustment) / adj]
@@ -574,7 +574,7 @@ getLoansDailyCollateral_acala_loan <- function(network, window, staging = FALSE)
 
   stopifnot(nrow(res) > 0)
   res[, Date := as.Date(timestamp)]
-  res[, collateral.id := fixToken(collateral.id)]
+  res[, collateral.id := fixToken(collateral.id, network)]
   res <- merge(res, tokens, by.x='collateral.id', by.y='Token')
 
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
@@ -620,8 +620,8 @@ getSwaps_acala_dex <- function(network, window, block = NULL, staging = FALSE) {
   names(res) <- gsub(".id","", names(res))
 
   # Replace foreign assets
-  res[, token0 := fixToken(token0)]
-  res[, token1 := fixToken(token1)]
+  res[, token0 := fixToken(token0, network)]
+  res[, token1 := fixToken(token1, network)]
   res[, block_num := as.numeric(block)]
 
   # Normalize pairs
@@ -629,15 +629,15 @@ getSwaps_acala_dex <- function(network, window, block = NULL, staging = FALSE) {
   res[token1 < token0, pair := paste0(token1 %+% ":" %+% token0)]
 
   # Create pair0, pair1, etc.
-  z <- myPath(res$tradePath)
+  z <- myPath(res$tradePath, network)
   res[, path0 := z$path0][, path1 := z$path1][, path2 := z$path2]
   # Create token0, token1, etc.
   a1 <- myAmount(res$tradePath)
   res[, tokenPath0 := a1$path0][, tokenPath1 := a1$path1][, tokenPath2 := a1$path2][, tokenPath3 := a1$path3]
-  res[, tokenPath0 := fixToken(tokenPath0)]
-  res[, tokenPath1 := fixToken(tokenPath1)]
-  res[, tokenPath2 := fixToken(tokenPath2)]
-  res[, tokenPath3 := fixToken(tokenPath3)]
+  res[, tokenPath0 := fixToken(tokenPath0, network)]
+  res[, tokenPath1 := fixToken(tokenPath1, network)]
+  res[, tokenPath2 := fixToken(tokenPath2, network)]
+  res[, tokenPath3 := fixToken(tokenPath3, network)]
 
   # Create amount0, amount1, etc.
   a2 <- myAmount(res$amounts)
@@ -681,8 +681,8 @@ getSwaps_acala <- function(network, window, block = NULL, staging = FALSE) {
   setorder(res, timestamp)
 
   # Replace foreign assets
-  res[, token0Id := fixToken(token0Id)]
-  res[, token1Id := fixToken(token1Id)]
+  res[, token0Id := fixToken(token0Id, network)]
+  res[, token1Id := fixToken(token1Id, network)]
 
   # Normalize pairs
   res[, pair := paste0(token0Id %+% ":" %+% token1Id)]
@@ -712,7 +712,7 @@ getLiquidateUnsafeCDP_acala_loan <- function(network, window, staging = FALSE) {
   res <- get_graph(endpoint, method, edges, window)
 
   res[, Date := as.Date(timestamp)]
-  res[, collateral.id := fixToken(collateral.id)]
+  res[, collateral.id := fixToken(collateral.id, network)]
   res <- merge(res, tokens, by.x='collateral.id', by.y='Token')
 
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
@@ -767,8 +767,8 @@ getRewards_acala_incentives <- function(network, window, filter = '', endpage = 
   edges <- "id addressId tokenId pool actualAmount deductionAmount blockId extrinsicId timestamp"
   filter <- ' filter: {blockId: { lessThan: "1639493", greaterThan: "1638215" }}'
   res <- get_graph(endpoint, method, edges, window, filter, endpage)
-  res[, tokenId := fixToken(tokenId)]
-  res[, pool := fixToken(pool)]
+  res[, tokenId := fixToken(tokenId, network)]
+  res[, pool := fixToken(pool, network)]
 
   res <- merge(res, tokens, by.x = "tokenId", by.y="Token")
   # res[, actualAmount := as.numeric(actualAmount) / 10**as.numeric(decimals)]
@@ -827,7 +827,7 @@ getDailyAccountBalance_acala_token <- function(network, window, filter = '', end
   res <- get_graph(endpoint, method, edges, window, filter, endpage)
   # unique(res$tokenId)
 
-  res[, tokenId := subscanr::fixToken(tokenId)]
+  res[, tokenId := subscanr::fixToken(tokenId, network)]
   res <- merge(res, tokens, by.x='tokenId', by.y='Token')
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
   res[, total := as.numeric(total) / adj]
@@ -859,7 +859,7 @@ getAccountBalance_acala_token <- function(network, window, filter = '', endpage 
   edges <- "accountId tokenId total free reserved frozen"
   res <- get_graph(endpoint, method, edges, window, filter, endpage)
 
-  res[, tokenId := subscanr::fixToken(tokenId)]
+  res[, tokenId := subscanr::fixToken(tokenId, network)]
   res <- merge(res, tokens, by.x='tokenId', by.y='Token')
   res[, adj := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
   res[, total := as.numeric(total) / adj]
@@ -1045,9 +1045,9 @@ getPoolStats_acala <- function(network, window = 1, staging = FALSE) {
   res <- get_graph(endpoint, method, edges, window=1, filter = '')
 
   # Replace foreign assets
-  res[, token0.name := fixToken(token0.name)]
-  res[, token1.name := fixToken(token1.name)]
-  res[, id := fixToken(id)]
+  res[, token0.name := fixToken(token0.name, network)]
+  res[, token1.name := fixToken(token1.name, network)]
+  res[, id := fixToken(id, network)]
 
   d24 <- list()
   d7 <- list()
@@ -1093,9 +1093,9 @@ getPoolStats_acala_dex <- function(network, window = 1, filter = '', staging = F
   res <- get_graph(endpoint, method, edges, window=1, filter = filter)
 
   # Replace foreign assets
-  res[, token0.name := fixToken(token0.name)]
-  res[, token1.name := fixToken(token1.name)]
-  res[, id := fixToken(id)]
+  res[, token0.name := fixToken(token0.name, network)]
+  res[, token1.name := fixToken(token1.name, network)]
+  res[, id := fixToken(id, network)]
 
   d24 <- list()
   d7 <- list()
@@ -1137,9 +1137,9 @@ getPoolStats_acala_dex_testing <- function(network, window = 1, staging = FALSE)
   # res <- get_graph(endpoint, method, edges, window=1, filter = 'filter: {token0Id: {equalTo: "AUSD"}, token1Id: {equalTo: "LDOT"}}')
 
   # Replace foreign assets
-  res[, token0.name := fixToken(token0.name)]
-  res[, token1.name := fixToken(token1.name)]
-  res[, id := fixToken(id)]
+  res[, token0.name := fixToken(token0.name, network)]
+  res[, token1.name := fixToken(token1.name, network)]
+  res[, id := fixToken(id, network)]
 
   res[, totalTVL := as.numeric(totalTVL) / 1e18]
   res[, token0TVL := as.numeric(token0TVL) / 1e18]
@@ -1167,7 +1167,7 @@ getTokenDailyData_acala_dex <- function(network, window = 1, staging = FALSE) {
   res <- get_graph(endpoint, method, edges, window=1, filter = '')
 
   # Replace foreign assets
-  res[, tokenId := fixToken(tokenId)]
+  res[, tokenId := fixToken(tokenId, network)]
 
   res[, tvl := as.numeric(tvl) / 1e18]
   res[, dailyTradeVolumeUSD := as.numeric(dailyTradeVolumeUSD) / 1e18]
@@ -1195,9 +1195,9 @@ getDailyPool_acala_dex <- function(network, window = 1, filter = '', staging = F
   res <- get_graph(endpoint, method, edges, window=1, filter = filter)
 
   # Replace foreign assets
-  res[, token0Id := fixToken(token0Id)]
-  res[, token1Id := fixToken(token1Id)]
-  res[, poolId := fixToken(poolId)]
+  res[, token0Id := fixToken(token0Id, network)]
+  res[, token1Id := fixToken(token1Id, network)]
+  res[, poolId := fixToken(poolId, network)]
 
   res[, feeRateUSD := as.numeric(feeRateUSD) / 1e18]
   res[, token0Price := as.numeric(token0Price) / 1e18]
@@ -1239,9 +1239,9 @@ getPoolDayData_acala <- function(network, window = 1, staging = FALSE) {
   res <- get_graph(endpoint, method, edges, window=1, filter = '')
 
   # Replace foreign assets
-  res[, token0Id := fixToken(token0Id)]
-  res[, token1Id := fixToken(token1Id)]
-  res[, poolId := fixToken(poolId)]
+  res[, token0Id := fixToken(token0Id, network)]
+  res[, token1Id := fixToken(token1Id, network)]
+  res[, poolId := fixToken(poolId, network)]
 
   res <- merge(res, tokens, by.x='token0Id', by.y='Token', allow.cartesian = TRUE)
   res[, adj0 := as.numeric(substr(as.character(1e20),1, as.numeric(decimals) + 1))]
