@@ -433,7 +433,7 @@ getLoansCollateralParamsHistory_acala_loan <- function(network, staging = FALSE)
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getLoansDailyPositions_acala_loan <- function(network, window, staging = FALSE) {
+getLoansDailyPositions_acala_loan <- function(network, window=10, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
@@ -447,7 +447,7 @@ getLoansDailyPositions_acala_loan <- function(network, window, staging = FALSE) 
   method <- "dailyPositions"
   edges <- "id owner {id} collateral {id} depositAmount debitAmount depositVolumeUSD debitVolumeUSD
                depositChangedUSD debitChangedUSD debitExchangeRate timestamp txCount"
-  res <- get_graph(endpoint, method, edges, window)
+  res <- get_graph(endpoint, method, edges, filter="timestamp", window=window)
 
   res[, Date := as.Date(timestamp)]
   res[, collateral.id := fixToken(collateral.id, network)]
@@ -468,7 +468,7 @@ getLoansDailyPositions_acala_loan <- function(network, window, staging = FALSE) 
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
-getLoansPositions_acala_loan <- function(network, window, filter = '', staging = FALSE) {
+getLoansPositions_acala_loan <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
 
   if (tolower(network) == 'acala') {
     endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-loans"
@@ -482,7 +482,7 @@ getLoansPositions_acala_loan <- function(network, window, filter = '', staging =
   # filter <- 'filter: {collateralId: {in: ["ACA","DOT","LDOT","KSM","LKSM"]}} '; endpage <- 2
   method <- "positions"
   edges <- "owner {id} collateral {id} txCount depositAmount debitAmount updateAt updateAtBlock {id}"
-  res <- get_graph(endpoint, method, edges, window, filter = filter)
+  res <- get_graph(endpoint, method, edges, window, filter = filter, endpage = endpage)
 
   res[, collateral.id := fixToken(collateral.id, network)]
   res <- merge(res, tokens, by.x='collateral.id', by.y='Token')
