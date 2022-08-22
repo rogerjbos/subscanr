@@ -50,78 +50,78 @@ myAmount <- function(path) {
 `%+%` <- function(a, b) paste0(a, b)
 
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
-fixToken <- function(x, chain = "Karura") {
+fixToken <- function(x, chain = "karura") {
 
-  fa0 <- ifelse(tolower(chain) == 'Karura', 'RMRK', 'GLMR')
+  fa0 <- ifelse(tolower(chain) == 'karura', 'RMRK', 'GLMR')
   x <- stri_replace_all_regex(x, pattern=c('fa://0', 'ForeignAsset://0', 'fa%3A%2F%2F0', "\\{'ForeignAsset': 0\\}"), replacement=fa0, vectorize=FALSE)
 
-  fa1 <- ifelse(tolower(chain) == 'Karura', 'ARIS', 'PARA')
+  fa1 <- ifelse(tolower(chain) == 'karura', 'ARIS', 'PARA')
   x <- stri_replace_all_regex(x, pattern=c('fa://1', 'ForeignAsset://1', 'fa%3A%2F%2F1', "\\{'ForeignAsset': 1\\}"), replacement=fa1, vectorize=FALSE)
 
-  fa2 <- ifelse(tolower(chain) == 'Karura', 'QTZ', 'ASTR')
+  fa2 <- ifelse(tolower(chain) == 'karura', 'QTZ', 'ASTR')
   x <- stri_replace_all_regex(x, pattern=c('fa://2', 'ForeignAsset://2', 'fa%3A%2F%2F2', "\\{'ForeignAsset': 2\\}"), replacement=fa2, vectorize=FALSE)
 
-  fa3 <- ifelse(tolower(chain) == 'Karura', 'MOVR', 'iBTC')
+  fa3 <- ifelse(tolower(chain) == 'karura', 'MOVR', 'iBTC')
   x <- stri_replace_all_regex(x, pattern=c('fa://3', 'ForeignAsset://3', 'fa%3A%2F%2F3', "\\{'ForeignAsset': 3\\}"), replacement=fa3, vectorize=FALSE)
 
-  fa4 <- ifelse(tolower(chain) == 'Karura', 'HKO', 'INTR')
+  fa4 <- ifelse(tolower(chain) == 'karura', 'HKO', 'INTR')
   x <- stri_replace_all_regex(x, pattern=c('fa://4', 'ForeignAsset://4', 'fa%3A%2F%2F4', "\\{'ForeignAsset': 4\\}"), replacement=fa4, vectorize=FALSE)
 
-  fa5 <- ifelse(tolower(chain) == 'Karura', 'CSM', 'WBTC')
+  fa5 <- ifelse(tolower(chain) == 'karura', 'CSM', 'WBTC')
   x <- stri_replace_all_regex(x, pattern=c('fa://5', 'ForeignAsset://5', 'fa%3A%2F%2F5', "\\{'ForeignAsset': 5\\}"), replacement=fa5, vectorize=FALSE)
 
-  fa6 <- ifelse(tolower(chain) == 'Karura', 'KICO', 'WETH')
+  fa6 <- ifelse(tolower(chain) == 'karura', 'KICO', 'WETH')
   x <- stri_replace_all_regex(x, pattern=c('fa://6', 'ForeignAsset://6', 'fa%3A%2F%2F6', "\\{'ForeignAsset': 6\\}"), replacement=fa6, vectorize=FALSE)
 
-  fa7 <- ifelse(tolower(chain) == 'Karura', 'USDT', 'EQ')
+  fa7 <- ifelse(tolower(chain) == 'karura', 'USDT', 'EQ')
   x <- stri_replace_all_regex(x, pattern=c('fa://7', 'ForeignAsset://7', 'fa%3A%2F%2F7', "\\{'ForeignAsset': 7\\}"), replacement=fa7, vectorize=FALSE)
 
-  fa8 <- ifelse(tolower(chain) == 'Karura', 'TEER', 'EQD')
+  fa8 <- ifelse(tolower(chain) == 'karura', 'TEER', 'EQD')
   x <- stri_replace_all_regex(x, pattern=c('fa://8', 'ForeignAsset://8', 'fa%3A%2F%2F8', "\\{'ForeignAsset': 8\\}"), replacement=fa8, vectorize=FALSE)
 
-  fa9 <- ifelse(tolower(chain) == 'Karura', 'NEER', 'PHA')
+  fa9 <- ifelse(tolower(chain) == 'karura', 'NEER', 'PHA')
   x <- stri_replace_all_regex(x, pattern=c('fa://9', 'ForeignAsset://9', 'fa%3A%2F%2F9', "\\{'ForeignAsset': 9\\}"), replacement=fa9, vectorize=FALSE)
 
-  fa10 <- ifelse(tolower(chain) == 'Karura', 'KMA', '')
+  fa10 <- ifelse(tolower(chain) == 'karura', 'KMA', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://10', 'ForeignAsset://10', 'fa%3A%2F%2F10', "\\{'ForeignAsset': 10\\}"), replacement=fa10, vectorize=FALSE)
 
-  fa11 <- ifelse(tolower(chain) == 'Karura', 'BSX', '')
+  fa11 <- ifelse(tolower(chain) == 'karura', 'BSX', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://11', 'ForeignAsset://11', 'fa%3A%2F%2F11', "\\{'ForeignAsset': 11\\}"), replacement=fa11, vectorize=FALSE)
 
-  fa12 <- ifelse(tolower(chain) == 'Karura', 'AIR', '')
+  fa12 <- ifelse(tolower(chain) == 'karura', 'AIR', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://12', 'ForeignAsset://12', 'fa%3A%2F%2F12', "\\{'ForeignAsset': 12\\}"), replacement=fa12, vectorize=FALSE)
 
-  fa13 <- ifelse(tolower(chain) == 'Karura', 'CRAB', '')
+  fa13 <- ifelse(tolower(chain) == 'karura', 'CRAB', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://13', 'ForeignAsset://13', 'fa%3A%2F%2F13', "\\{'ForeignAsset': 13\\}"), replacement=fa13, vectorize=FALSE)
 
-  fa14 <- ifelse(tolower(chain) == 'Karura', 'GENS', '')
+  fa14 <- ifelse(tolower(chain) == 'karura', 'GENS', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://14', 'ForeignAsset://14', 'fa%3A%2F%2F14', "\\{'ForeignAsset': 14\\}"), replacement=fa14, vectorize=FALSE)
 
-  fa15 <- ifelse(tolower(chain) == 'Karura', 'EQD', '')
+  fa15 <- ifelse(tolower(chain) == 'karura', 'EQD', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://15', 'ForeignAsset://15', 'fa%3A%2F%2F15', "\\{'ForeignAsset': 15\\}"), replacement=fa15, vectorize=FALSE)
 
-  fa16 <- ifelse(tolower(chain) == 'Karura', 'TUR', '')
+  fa16 <- ifelse(tolower(chain) == 'karura', 'TUR', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://16', 'ForeignAsset://16', 'fa%3A%2F%2F16', "\\{'ForeignAsset': 16\\}"), replacement=fa16, vectorize=FALSE)
 
-  fa17 <- ifelse(tolower(chain) == 'Karura', 'PCHU', '')
+  fa17 <- ifelse(tolower(chain) == 'karura', 'PCHU', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://17', 'ForeignAsset://17', 'fa%3A%2F%2F17', "\\{'ForeignAsset': 17\\}"), replacement=fa17, vectorize=FALSE)
 
-  fa18 <- ifelse(tolower(chain) == 'Karura', 'SDN', '')
+  fa18 <- ifelse(tolower(chain) == 'karura', 'SDN', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://18', 'ForeignAsset://18', 'fa%3A%2F%2F18', "\\{'ForeignAsset': 18\\}"), replacement=fa18, vectorize=FALSE)
 
-  fa19 <- ifelse(tolower(chain) == 'Karura', 'LT', '')
+  fa19 <- ifelse(tolower(chain) == 'karura', 'LT', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://19', 'ForeignAsset://19', 'fa%3A%2F%2F19', "\\{'ForeignAsset': 19\\}"), replacement=fa19, vectorize=FALSE)
 
-  fa20 <- ifelse(tolower(chain) == 'Karura', 'LIT', '')
+  fa20 <- ifelse(tolower(chain) == 'karura', 'LIT', '')
   x <- stri_replace_all_regex(x, pattern=c('fa://20', 'ForeignAsset://20', 'fa%3A%2F%2F20', "\\{'ForeignAsset': 20\\}"), replacement=fa20, vectorize=FALSE)
 
   lc13 <- 'LCDOT'
   x <- stri_replace_all_regex(x, pattern=c('lc://13', 'LiquidCrowdloan://13', 'lc%3A%2F%2F13', "\\{'LiquidCrowdloan': 13\\}"), replacement=lc13, vectorize=FALSE)
 
-  sa0 <- ifelse(tolower(chain) == 'Karura', 'taiKSM', 'tDOT')
+  sa0 <- ifelse(tolower(chain) == 'karura', 'taiKSM', 'tDOT')
   x <- stri_replace_all_regex(x, pattern=c('sa://0', 'StableAssetPoolToken://0', 'sa%3A%2F%2S0', "\\{'StableAssetPoolToken': 0\\}"), replacement=sa0, vectorize=FALSE)
 
-  sa1 <- ifelse(tolower(chain) == 'Karura', '3USD', '')
+  sa1 <- ifelse(tolower(chain) == 'karura', '3USD', '')
   x <- stri_replace_all_regex(x, pattern=c('sa://1', 'StableAssetPoolToken://1', 'sa%3A%2F%2S1', "\\{'StableAssetPoolToken': 1\\}"), replacement=sa1, vectorize=FALSE)
 
   x <- gsub("{'Token': 'BNC'}", 'BNC', x, perl = TRUE)
@@ -189,14 +189,13 @@ tokens <- as.data.table(rbind(c("3USD", "Taiga 3USD", 12),
                               c("QTZ","quartz", 18),
                               c("RMRK","rmrk", 10),
                               c("RENBTC","renbtc", 8),
-                              c("TAI","tai", 12),
                               c("SDN","shiden", 18),
-                              c("tDOT","tapio-DOT", 10),
+                              c("TAI","tai", 12),
                               c("TAP","tapio", 12),
-                              c("TUR","turing", 10),
-                              c("tDOT","tapio-dot", 10),
                               c("taiKSM","tai-ksm", 12),
                               c("TEER","integritee-trusted-execution-environment", 12),
+                              c("tDOT","tapio-DOT", 10),
+                              c("TUR","turing", 10),
                               c("USDC","usd-coin", 6),
                               c("USDT","tether-usd", 6),
                               c("USDCet","usd-coin-portal-from-ethereum", 6),
