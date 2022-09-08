@@ -49,6 +49,48 @@ get_polkaholic_chains <- function() {
 
 # tmp <- get_polkaholic_events(chain = "karura", module = "dex", call = 'Swap', startDate='2022-07-01', endDate='2022-07-02')
 
+#' Get events from the Polkadot blockchain from the Polkaholic api
+#' https://docs.polkaholic.io
+#'
+#' @name get_polkaholic_chainlog
+#' @title get_polkaholic_chainlog
+#' @encoding UTF-8
+#' @concept Get events from the Polkadot blockchain from the Polkaholic api
+#' @param chain string or integer specifying the target parachain
+#'
+#' @return data.table
+#'
+#' @examples
+#' get_polkaholic_chainlog("karura")
+#'
+#' @author Roger J. Bos, \email{roger.bos@@gmail.com}
+#' @export
+get_polkaholic_chainlog <- function(chain) {
+
+  # chain = "karura"
+  api_call <- 'api.polkaholic.io/chainlog/' %+% chain
+  baseurl <- paste0('https://', api_call)
+
+  r <- GET(url = baseurl,
+            add_headers(polkaholic_api_header, 'Content-Type: application/json'),
+            encode = "json")
+  r$status_code
+  while(r$status_code != 200) {
+    print("Error " %+% r$status_code)
+    Sys.sleep(3)
+    r <- GET(url = baseurl,
+             add_headers(polkaholic_api_header, 'Content-Type: application/json'),
+             encode = "json")
+  }
+  stop_for_status(r)
+  tmp <- content(r, as="text", encoding="UTF-8") %>%
+    fromJSON(flatten=TRUE) %>%
+    as.data.table
+  # add a human-readable date
+  tmp[, logTS := as.POSIXct(logTS, origin = "1970-01-01", tz = 'UTC')]
+  tmp
+
+}
 
 #' Get events from the Polkadot blockchain from the Polkaholic api
 #' https://docs.polkaholic.io
@@ -121,30 +163,30 @@ get_polkaholic_events <- function(chain, module, call, startDate, endDate, start
 #' @return data.table
 #'
 #' @examples
-#' t1 <- get_polkaholic_events("karura", module = "dex", call = 'Swap',
-#' startBlock=1, endBlock=2208550, nobs=10)
+#' t1 <- get_polkaholic_events("karura", module = "dex", call = 'Swap', startBlock=1, endBlock=2208550, nobs=10)
 #' t2 <- extract_polkaholic_events(t1)
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
 extract_polkaholic_events <- function(dat) {
 
+  out <- ""
   if (is.null(dat) || nrow(dat) < 1) {
     print("Supplied data is not suitable.  Did you run `get_polkaholic_events`?")
   } else if (dat$section =="dex" & dat$method == "Swap") {
-    if (nrow(tmp) > 0) {
+    if (nrow(dat) > 0) {
       d <- list()
-      for (i in 1:nrow(tmp)) {
+      for (i in 1:nrow(dat)) {
         # Pause to avoid 429 error
         if (i %% 5 == 0) Sys.sleep(1)
-        d[[i]] <- get_polkaholic_transaction(tmp$extrinsicHash[i])
+        d[[i]] <- get_polkaholic_transaction(dat$extrinsicHash[i])
       }
       out <- rbindlist(d, fill = TRUE)
-      return(out)
     }
   } else {
     print("Extractor not defined for section='" %+% dat$section[1] %+% "' and/or method='" %+% dat$method[1] %+% "'.")
   }
+  out
 }
 
 #' Get supported chains from the Polkaholic api
@@ -221,8 +263,9 @@ get_polkaholic_transaction <- function(TxHash) {
   }
   stop_for_status(r)
   tmp <- content(r, as="text", encoding="UTF-8") %>%
-    fromJSON(flatten=TRUE) %>%
-    as.data.table
+    fromJSON(flatten=TRUE)
+  tmp <- as.data.table(tmp)
+
   # add a human-readable date
   tmp[, time := as.POSIXct(ts, origin = "1970-01-01", tz = 'UTC')]
 
