@@ -18,8 +18,7 @@ Get events from the Polkadot blockchain from the Polkaholic api
 https://docs.polkaholic.io
 }
 \examples{
-t1 <- get_polkaholic_events("karura", module = "dex", call = 'Swap',
-startBlock=1, endBlock=2208550, nobs=10)
+t1 <- get_polkaholic_events("karura", module = "dex", call = 'Swap', startBlock=1, endBlock=2208550, nobs=10)
 t2 <- extract_polkaholic_events(t1)
 
 }
