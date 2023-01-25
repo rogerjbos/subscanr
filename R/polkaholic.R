@@ -255,8 +255,9 @@ get_polkaholic_transaction <- function(TxHash) {
   while(r$status_code != 200) {
     print("Error " %+% r$status_code)
     Sys.sleep(3)
-    r <- POST(baseurl, body = body,
-              add_headers(api_header, 'Content-Type: application/json'))
+    r <- GET(url = baseurl,
+             add_headers(polkaholic_api_header, 'Content-Type: application/json'),
+             encode = "json")
   }
   stop_for_status(r)
   tmp <- content(r, as="text", encoding="UTF-8") %>%

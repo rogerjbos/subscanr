@@ -89,7 +89,7 @@ endpoint_list <- c("Polkadot","polkadot.api.subscan.io",
 endpoints <- as.data.table(matrix(endpoint_list, ncol = 2, byrow = TRUE))
 setnames(endpoints, c("network_name","api_host"))
 #' @export
-get_endpoint <- function(x) endpoint_list[match(x, endpoint_list) + 1]
+get_endpoint <- function(x) endpoint_list[match(tolower(x), tolower(endpoint_list)) + 1]
 
 
 #' Get events from the Polkadot blockchain from the Subscan api
@@ -749,7 +749,7 @@ extract_events <- function(core_data, params, network) {
 #'
 #' @examples
 #' get_subscan_token()
-#' get_subscan_token(network = 'Acala')
+#' get_subscan_token(network = 'acala')
 #'
 #' @author Roger J. Bos, \email{roger.bos@@gmail.com}
 #' @export
