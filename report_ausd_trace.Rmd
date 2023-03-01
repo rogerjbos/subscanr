@@ -1,0 +1,465 @@
+---
+title: "Acala AUSD Trace"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+    social: menu
+    source_code: embed
+---
+
+```{css custom1, echo=FALSE}
+.dataTables_scrollBody {
+    max-height: 100% !important;
+}
+```
+
+```{r global, include=FALSE}
+
+
+library(knitr)
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE,
+  comment = "#>"
+)
+
+library(dygraphs)
+library(kableExtra)
+library(formattable)
+library(lubridate)
+library(flexdashboard)
+library(DT)
+library(subscanr)
+library(formattable)
+library(ghql)
+x <- GraphqlClient$new()
+
+# Helper function to concat
+`%+%` <- function(a, b) paste0(a, b)
+
+library(reticulate)
+# use_python("/opt/homebrew/bin/python3.9")
+
+```
+
+```{python, include=FALSE}
+
+import pandas as pd
+from datetime import date
+import requests
+import json
+from substrateinterface.utils.ss58 import ss58_decode, ss58_encode
+from scalecodec.base import ScaleBytes #, ScaleDecoder, RuntimeConfigurationObject, ScaleType
+from substrateinterface import SubstrateInterface, Keypair, ExtrinsicReceipt
+pd.set_option('display.max_columns', None)
+
+
+def getLoans(network, start_block_number, end_block_number):
+  if network.lower() == 'acala':
+    url = 'wss://acala-rpc-3.aca-api.network/ws'
+  else: 
+    url = 'wss://karura.polkawallet.io'      
+  substrate = SubstrateInterface(url)
+  data = []
+  for b in range(int(start_block_number), int(end_block_number)):
+    events = substrate.query('System', 'Events', block_hash=substrate.get_block_hash(b))
+    e = events.decode()
+    for i in range(len(e)):
+      if e[i]['module_id'] == 'Loans' and e[i]['event_id'] == 'PositionUpdated':
+        # print(f'***** {i}')
+        # print(e[i])
+        outi = {"address": e[i]['attributes'][0], "CurrencyId": e[i]['attributes'][1], 'collateral_adjustment': e[i]['attributes'][2], 'debit_adjustment': e[i]['attributes'][3]}
+        data.append(outi)  
+  out = pd.DataFrame(data)
+  return(out)
+
+# getLoans(network = "Acala", start_block_number = 1638215, end_block_number = 1639493)
+
+      
+  # for event in events:
+  #   if event.value['module_id'] == 'Loans' and event.value['event_id'] == 'PositionUpdated':
+  #     extrinsic_receipt = substrate.retrieve_extrinsic_by_identifier(f"{block_number}-{event.value['extrinsic_idx']}")
+  #     tmp = extrinsic_receipt.extrinsic.decode()
+  #     tmp2 = tmp['call']['call_args']
+  #     tmp2[0]['value']['currency_id']
+  #     
+  #   tmp = json.loads(events.decode()[1])
+  #     
+  #     out = {"address": tmp['address'], "CurrencyId": tmp2[1]['value'], 'collateral_adjustment': tmp2[1]['value'], 'debit_adjustment': tmp2[2]['value']}
+  # return out
+
+def getExtrinsic(network):
+  if network.lower() == 'acala':
+    url = 'wss://acala-rpc-0.aca-api.network'
+  else: 
+    url = 'wss://karura.polkawallet.io'      
+  substrate = SubstrateInterface(url)
+  data = []
+  for j in range(len(r.events)):
+    receipt = substrate.retrieve_extrinsic_by_identifier(r.events[j])
+    for i in range(len(receipt.triggered_events)):
+      tmp = receipt.triggered_events[i].decode()
+      if tmp['event_id'] == "PositionUpdated":
+        outi = {"AccountId": tmp['attributes'][0], "CurrencyId": tmp['attributes'][1], 'DepositAmount': tmp['attributes'][2], 'DebitAmount': tmp['attributes'][3]}
+        data.append(outi)
+        
+  out = pd.DataFrame(data)
+  return(out)
+
+# getExtrinsic("Acala", ["1507944-2","1507944-2","1507944-2"])
+
+# Convert ss58 address from one chain to another 
+# (i.e. Substrate=42, Polkadot=0, Kusama=2, Acala=10, Karura=8)
+def ss58_convert(addr, fromChain, toChain):
+  pk = ss58_decode(addr, valid_ss58_format = int(fromChain))
+  output = ss58_encode(pk, ss58_format = int(toChain))
+  return output
+
+# Convert ss58 address from one chain to another 
+# (i.e. Substrate=42, Polkadot=0, Kusama=2, Acala=10, Karura=8)
+def pk_convert(pk, toChain):
+  output = ss58_encode(pk, ss58_format = int(toChain))
+  return output
+
+
+# encoded_call_hash = "0x6d02840058f7c213df83660d39112b03073a01b69a4d7836bbba6b12b7f5797c9996645701f873abd040b35516e469d08ef973c27a19b8c199b706c1514917e681655a1d33ac83c6b716acb890f0e1517be1899089effe7636e13dbaa22083e08a71102b88140000000e04008203020874000b007083d05d0666000083408df266ef340000000000000000000000000000000000000000000000000000"
+# substrate = SubstrateInterface('wss://karura.polkawallet.io')
+# extrinsic_data = ScaleBytes(encoded_call_hash)
+# extrinsic = substrate.create_scale_object("Extrinsic", extrinsic_data)
+# print(extrinsic.decode())
+
+def getSubscanAPI(API_ENDPOINT, API_KEY, module, call, row, page):
+  # API_ENDPOINT = "https://karura.api.subscan.io/api/v2/scan/extrinsics"
+  # API_KEY = "3c62fde82f543d3560ec33223c47c95d"
+  # module = "transactionPayment"
+  # call = "with_fee_currency"
+  header = {"X-API-Key": API_KEY}
+  data = {"row": int(row), "page": int(page), "module": module, "call": call}
+  r = requests.post(url = API_ENDPOINT, headers = header, data = data)
+  if r.json()['message'] == 'Success':
+    return r.json()['data']['extrinsics']
+
+# def getSubscanExtrinsic(API_ENDPOINT, API_KEY, extrinsic_hash):
+#   API_ENDPOINT = "https://karura.api.subscan.io/api/v2/scan/extrinsic"
+#   API_KEY = "3c62fde82f543d3560ec33223c47c95d"
+#   extrinsic_hash = "0x18180de22e733b9a92236c64310c61fa5ef7324d5440835fd9bfe6b0c174b51b"
+#   index = "2399379-2"
+#   header = {"X-API-Key": API_KEY}
+#   # data = {"hash": extrinsic_hash}
+#   data = {"extrinsic_index": index}
+#   r = requests.post(url = API_ENDPOINT, headers = header, data = data)
+#   if r.json()['message'] == 'Success':
+#     return r.json()['data']['extrinsics']
+
+def getTotalIssuance(network):
+    if network.lower() == 'acala':
+        url = 'wss://acala-rpc-0.aca-api.network'
+        token = 'LDOT'
+        decimals = 10
+    else: 
+        url = 'wss://karura.polkawallet.io'      
+        token = 'LKSM'
+        decimals = 12
+    
+    data = []
+    substrate = SubstrateInterface(url)
+    for j in block_history:
+        hash = substrate.get_block_hash(block_id = int(j))
+        # timestamp = substrate.query(module='Timestamp',storage_function='Now',block_hash=hash).value
+        # Issuance
+        liquid = substrate.query(module='Tokens',storage_function='TotalIssuance', params = [{'Token': token}], block_hash = hash).value / 10**decimals
+        
+        try:
+            homa = substrate.query_map(module='Homa',storage_function='StakingLedgers', block_hash = hash)
+            amount = 0
+            for res in homa:
+                amount += res[1].value['bonded']
+        except:
+            amount = 0
+        outi = {"network": network, "Block": j, 'liquid_amount': liquid, 'staking_amount': amount / 10**decimals}
+        data.append(outi)
+    out = pd.DataFrame(data)
+    return out
+
+```
+
+
+
+```{r honzon, cache = TRUE, include=FALSE}
+
+# tmp <- py$getLoans(network = "Acala", start_block_number = "1638215", end_block_number = "1639493")
+
+
+
+# r_sq <- getRewards_acala("Acala", window = 4)
+trace <- fromJSON("~/subquery/trace1/scripts/src/trace/claim-rewards-events.json", flatten = TRUE)
+trace <- as.data.table(trace) %>%
+  setnames(names(trace), names(trace) %+% "_sq")
+
+getRewards_acala_incentives <- function(network, window, filter = '', endpage = 2000, staging = FALSE) {
+
+  # network="acala"; window = 1; filter = ''; endpage = 2
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-incentives"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-incentives"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "claimRewards"
+  edges <- "id addressId tokenId pool actualAmount deductionAmount blockId extrinsicId timestamp"
+  filter <- ' filter: {blockId: { lessThan: "1639493", greaterThan: "1638215" }}'
+  res <- get_graph(endpoint, method, edges, window, filter, endpage)
+  res[, tokenId := fixToken(tokenId)]
+  res[, pool := fixToken(pool)]
+
+  res <- merge(res, tokens, by.x = "tokenId", by.y="Token")
+  # res[, actualAmount := as.numeric(actualAmount) / 10**as.numeric(decimals)]
+  # res[, deductionAmount := as.numeric(deductionAmount) / 10**as.numeric(decimals)]
+  res
+
+}
+
+r_in <- getRewards_acala_incentives("Acala", window = 4)
+r_in[, pool := fixToken(pool)]
+r_in <- r_in[pool == "dex-lp://AUSD/iBTC" & tokenId == "AUSD"]
+setnames(r_in, names(r_in), names(r_in) %+% "_in")
+r_in <- r_in[, .(id_in, addressId_in, actualAmount_in, blockId_in)]
+tail(r_in, 2)
+
+comb <- merge(trace, r_in, by.x = "id_sq", by.y = "id_in", all = TRUE)
+comb[, diff := abs(as.numeric(actualAmount_sq) - as.numeric(actualAmount_in))]
+comb[diff > 0]
+
+
+r_ss <- get_subscan_events(nobs = 1000, network = 'Acala', start_page = 1, module = 'incentives', call = 'ClaimRewards', block = NULL)$incentives_ClaimRewards
+stopifnot(min(r_ss$block_num) <= 1638215)
+
+r_ss[, token0Id := fixToken(token0Id)]
+r_ss[, token1Id := fixToken(token1Id)]
+r_ss[, rewardToken := fixToken(rewardToken)]
+r_ss <- r_ss[block_num >= 1638215 & block_num <= 1639493 & rewardToken == "AUSD"]
+r_ss <- merge(r_ss, tokens, by.x = "rewardToken", by.y="Token")
+r_ss[, actualAmount := as.numeric(actualAmount) / 10**as.numeric(decimals)]
+r_ss <- r_ss[, .(event_index, AccountId, actualAmount)]
+setnames(r_ss, names(r_ss), names(r_ss) %+% "_ss")
+tail(r_ss, 2)
+
+comb2 <- merge(trace, r_ss, by.x = "id_sq", by.y = "event_index_ss", all = TRUE)
+comb2[, diff := abs(as.numeric(actualAmount_sq) - as.numeric(actualAmount_ss))]
+comb2[diff > 0]
+
+
+
+getHourlyPools_acala_dex <- function(network, window = 1, filter = '', staging = FALSE) {
+
+  if (tolower(network) == 'acala') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/acala-dex"
+  } else if (tolower(network) == 'karura') {
+    endpoint <- "https://api.subquery.network/sq/AcalaNetwork/karura-dex"
+  } else {
+    stop("Network not found; must be one of 'acala' or 'karura'")
+  }
+  if (staging) endpoint <- endpoint %+% stagingStr
+
+  method <- "hourlyPools"
+  filter <- ' filter: {updateAtBlockId: {in: ["1638007", "1639638"]}}'
+  edges <- "id
+            token0 {decimals, name}
+            token1 {decimals, name}
+            token0Amount
+            token1Amount
+            totalTVL
+            token0TVL
+            token1TVL
+            updateAtBlock {id}"
+  res <- get_graph(endpoint, method, edges, window=1, filter = filter)
+
+  # Replace foreign assets
+  res[, token0.name := fixToken(token0.name)]
+  res[, token1.name := fixToken(token1.name)]
+  res[, id := fixToken(id)]
+
+  res[, totalTVL := as.numeric(totalTVL) / 1e18]
+  res
+
+}
+
+
+
+tmp <- getPoolStats_acala_dex("Acala", window = 6)
+unique(tmp$id)
+
+hourly <- getHourlyPools_acala_dex("Acala", window = 1)
+strsplit(hourly$id, "-")
+  
+daily <- getDailyPool_acala_dex("Acala", window = 1, filter = '')
+unique(daily$poolId)
+
+
+# library(googlesheets4)
+# library(googledrive)
+# drive_auth(email="roger@laminar.one")
+# gs4_auth()
+# tmp <- read_sheet("https://docs.google.com/spreadsheets/d/1d49RhOV5C_u5KZpjwVJKEug53R6iGF-h6Pjs9bCTqPY/edit#gid=126763249")
+
+
+  library(readxl)
+  rd <- read_xlsx("~/Downloads/Recovery(INTERNAL).xlsx", sheet = 6)[, 1:8] %>% 
+    as.data.table
+  rd[, .N]
+  # e <- strsplit(rd$eventId, "-")
+  # rd[, block := NULL]
+  # for (ii in 1:nrow(rd)) rd$block[ii] <- as.numeric(e[ii][[1]][1])
+  
+  rd[1:2]
+  
+  dex <- get_subscan_events(nobs = 50000, network = 'Acala', start_page = 1, module = 'dex')
+
+  remliq <- dex$dex_RemoveLiquidity
+  remliq[, eventId := block_num %+% "-" %+% event_idx]
+  remliq[, token0Id := fixToken(token0Id)]
+  remliq[, token1Id := fixToken(token1Id)]
+  remliq[, .N]
+  for (ii in 1:nrow(remliq)) remliq$address[ii] <- py$pk_convert(remliq$AccountId[ii][[1]], 10)
+  remliq <- merge(remliq, tokens, by.x = "token0Id", by.y="Token", all.x = TRUE) %>%
+    setnames("decimals", "decimals0")
+  remliq[is.na(decimals0), .N]
+  remliq[, Name := NULL]
+  remliq[, token0Amount := -as.numeric(token0Amount) / 10 ** as.numeric(decimals0)]
+  remliq <- merge(remliq, tokens, by.x = "token1Id", by.y="Token", all.x = TRUE) %>%
+    setnames("decimals", "decimals1")
+  remliq[is.na(decimals1), .N]
+  remliq[, Name := NULL]
+  remliq[, token1Amount := -as.numeric(token1Amount) / 10 ** as.numeric(decimals1)]
+  head(remliq,2)
+
+  remliq[is.na(decimals1)]
+  
+  addliq <- dex$dex_AddLiquidity
+  addliq[, eventId := block_num %+% "-" %+% event_idx]
+  addliq[, token0Id := fixToken(token0Id)]
+  addliq[, token1Id := fixToken(token1Id)]
+  addliq[, .N]
+  for (ii in 1:nrow(addliq)) addliq$address[ii] <- py$pk_convert(addliq$AccountId[ii][[1]], 10)
+  addliq <- merge(addliq, tokens, by.x = "token0Id", by.y="Token", all.x = TRUE) %>%
+    setnames("decimals", "decimals0")
+  addliq[, Name := NULL]
+  addliq[, token0Amount := as.numeric(token0Amount) / 10 ** as.numeric(decimals0)]
+  addliq <- merge(addliq, tokens, by.x = "token1Id", by.y="Token", all.x = TRUE) %>%
+    setnames("decimals", "decimals1")
+  addliq[, Name := NULL]
+  addliq[, token1Amount := as.numeric(token1Amount) / 10 ** as.numeric(decimals1)]
+  addliq[, .N]
+
+  rd_rem <- merge(rd, remliq, by.x = c("who","block"), by.y = c("address", "block_num"))
+  rd_add <- merge(rd, addliq, by.x = c("who","block"), by.y = c("address", "block_num"))
+
+  rd_new <- rbind(rd_rem[, .(who, eventId.x, currencyId0, token0Id, pool0, token0Amount, currencyId1, token1Id, pool1, token1Amount)],
+  rd_add[, .(who, eventId.x, currencyId0, token0Id, pool0, token0Amount, currencyId1, token1Id, pool1, token1Amount)])
+  rd[, .N]  
+  rd_new[, .N]  
+  rd_rem[, .N]
+  rd_add[, .N]
+
+  names(rd)
+  names(rd_new)
+  rd_test <- merge(rd, rd_new[, .(who, eventId.x)], by.x="eventId", by.y = "eventId.x", all = TRUE)
+  rd_test[is.na(who.y)]
+  unique(rd_test$who.x)
+  
+  tmp <- rd[, .N, by = who] %>% setorder(N)
+  tmp_new <- rd_new[, .N, by = who] %>% setorder(N)
+  
+  rd[who == '23eCXs2tg7xv2btSHtb3m79eiN96KZtQ6GMpWpg6EKDQnKB2']
+  rd_new[who == '23eCXs2tg7xv2btSHtb3m79eiN96KZtQ6GMpWpg6EKDQnKB2']
+  
+  
+  
+  # nobs = 100; network = 'Astar'; module = ''; call = ''; page = 1
+  # nobs = 500; network = 'Karura'; module = 'dex'; call = 'Swap'; page = 1; start_page = 1
+  # nobs = 100; network = 'Acala'; module = 'incentives'; call = ''; start_page = 1; extract = TRUE
+  # nobs = 100; network = 'Karura'; module = 'loans'; call = 'PositionUpdated'; start_page = 1; extract = TRUE
+
+
+
+  
+```
+
+# Acala {.tabset}
+
+Row
+----
+
+### Collateral Deposited
+
+This report pulls the most 60 days of `loans.UpdatePosition` events from Subscan and compares those to the `PositionUpdate` entity values shown by the `acala-loans-subql` project.  There are many instances where the collateral value is zero.  We focus on the most interesting observations by requiring that the collateral value is non-zero in both data sources.  There are `r nrow(a_deposit_match)` instances where the values match and `r nrow(a_deposit_not)` where they do not match.  Here is a sampling of the non-matching observations.
+
+```{r a_deposit}
+
+knitr::kable(head(a_deposit_not, 15)) %>%
+  kable_styling()
+
+```
+
+Row
+----
+
+### Debit
+
+This report pulls the most 60 days of `loans.UpdatePosition` events from Subscan and compares those to the `PositionUpdate` entity values shown by the `acala-loans-subql` project.  There are `r nrow(a_debit_match)` instances where the values match and `r nrow(a_debit_not)` where they do not match.  Here is a sampling of the non-matching observations.
+
+```{r a_debit}
+
+knitr::kable(head(a_debit_not, 15)) %>%
+  kable_styling()
+
+```
+
+Sources: 
+
+* Subscan - https://acala.subscan.io/
+
+* Subquery - https://explorer.subquery.network/subquery/AcalaNetwork/acala-loan
+
+
+# Karura {.tabset}
+
+Row
+----
+
+### Collateral Deposited
+
+This report pulls the most 60 days of `loans.UpdatePosition` events from Subscan and compares those to the `PositionUpdate` entity values shown by the `acala-loans-subql` project.  There are many instances where the collateral value is zero.  We focus on the most interesting observations by requiring that the collateral value is non-zero in both data sources.  There are `r nrow(k_deposit_match)` instances where the values match and `r nrow(k_deposit_not)` where they do not match.  Here is a sampling of the non-matching observations.
+
+```{r k_deposit}
+
+knitr::kable(head(k_deposit_not, 15)) %>%
+  kable_styling()
+
+```
+
+Row
+----
+
+### Debit
+
+This report pulls the most 60 days of `loans.UpdatePosition` events from Subscan and compares those to the `PositionUpdate` entity values shown by the `acala-loans-subql` project.  There are `r nrow(k_debit_match)` instances where the values match and `r nrow(k_debit_not)` where they do not match.  Here is a sampling of the non-matching observations.
+
+```{r k_debit}
+
+knitr::kable(head(k_debit_not, 10)) %>%
+  kable_styling()
+
+```
+
+Sources: 
+
+* Subscan - https://karura.subscan.io/
+
+* Subquery - https://explorer.subquery.network/subquery/AcalaNetwork/karura-loan
+

@@ -35,8 +35,7 @@ Get events from the Polkadot blockchain from the Polkaholic api
 https://docs.polkaholic.io
 }
 \examples{
-get_polkaholic_events("karura", module = "dex", call = 'Swap',
-startDate='2022-07-01', endDate='2022-07-02', nobs = 5)
+tmp <- get_polkaholic_events("karura", module = "staking", call = 'Ledger', startDate='2022-07-01', endDate='2022-07-02', nobs = 5)
 
 }
 \author{

@@ -18,8 +18,7 @@ Get supported chains from the Polkaholic api
 https://docs.polkaholic.io
 }
 \examples{
-get_polkaholic_transaction(TxHash =
-'0x8b91d038421d5aba4b3a651d70923fb0d41423b914d6dad910637aa2c9a2ad70')
+get_polkaholic_transaction(TxHash = '0x8b91d038421d5aba4b3a651d70923fb0d41423b914d6dad910637aa2c9a2ad70')
 
 }
 \author{

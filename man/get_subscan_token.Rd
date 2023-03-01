@@ -19,7 +19,7 @@ https://docs.api.subscan.io
 }
 \examples{
 get_subscan_token()
-get_subscan_token(network = 'Acala')
+get_subscan_token(network = 'acala')
 
 }
 \author{

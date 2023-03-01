@@ -18,7 +18,7 @@ Get events from the Polkadot blockchain from the Polkaholic api
 https://docs.polkaholic.io
 }
 \examples{
-get_polkaholic_chainlog("karura")
+tmp <- get_polkaholic_chainlog("astar")
 
 }
 \author{
